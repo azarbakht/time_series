@@ -29,7 +29,7 @@ observations close together in time tend to be correlated (serially dependent)
 TS tries to explain this correlation (serial dependence)
 autocorrelation analysis examines this serial dependence <?>
 
-### conditions (assumptions of TS)
+#### conditions (assumptions of TS)
 - stationary process ?
 - Ergodic process ?
 
@@ -43,3 +43,5 @@ plot(AirPassengers)
     can be modeled simply by a linear increase or decrease
 2. seasonal variation = a repeating pattern within a fixed period (e.g. each year)
 3. cycles = a non-fixed-period cycle (without a fixed period) 
+
+

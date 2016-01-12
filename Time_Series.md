@@ -29,7 +29,7 @@ observations close together in time tend to be correlated (serially dependent)
 TS tries to explain this correlation (serial dependence)
 autocorrelation analysis examines this serial dependence <?>
 
-### conditions (assumptions of TS)
+#### conditions (assumptions of TS)
 - stationary process ?
 - Ergodic process ?
 
@@ -37,7 +37,7 @@ autocorrelation analysis examines this serial dependence <?>
 plot(AirPassengers)
 ```
 
-### patterns
+#### patterns
 
 1. trend = a non-periodic systematic change in a TS
     can be modeled simply by a linear increase or decrease
