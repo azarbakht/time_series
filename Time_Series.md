@@ -37,4 +37,11 @@ autocorrelation analysis examines this serial dependence <?>
 plot(AirPassengers)
 ```
 
+### patterns
+
+1. trend = a non-periodic systematic change in a TS
+    can be modeled simply by a linear increase or decrease
+2. seasonal variation = a repeating pattern within a fixed period (e.g. each year)
+3. cycles = a non-fixed-period cycle (without a fixed period) 
+
 
