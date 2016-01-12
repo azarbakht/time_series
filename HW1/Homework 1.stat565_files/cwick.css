@@ -1,0 +1,128 @@
+/* http://colorschemedesigner.com/#1T21Ow0w0w0w0 */
+html,body  {
+  background-image: url("/goovepaper.png"); 
+  background-attachment:fixed;
+  font-family: 'Istok Web', sans-serif;
+  font-color: #000;
+  font-size: 11pt;
+}
+/*http://subtlepatterns.com/*/
+
+
+header{
+  margin-top: 2em;
+  margin-bottom: 1em;
+}
+
+.paleblue{
+  border: 1px solid #663366;
+  background-color: #663366;
+  background: rgba(95,48,95,0.3);
+}
+
+.inset{
+  margin: 20px;
+  }
+
+.blocked {  
+  -webkit-border-radius:5px;  
+  -moz-border-radius:5px;
+  border-radius: 5px;
+  margin-left: -1px;
+  margin-right: -1px;
+}
+
+.palewhite{ 
+  border: 1px solid #ccc;
+  background-color: #fff;
+  background: rgba(255,255,255,0.3);
+}
+
+
+ul li {list-style: inside disc;margin-top: 0; margin-bottom: 0;}
+
+pre, code {
+  font-family: 'Inconsolata', monospace;
+  color: #000;
+}
+
+pre {
+  border: 1px solid #ccc;
+  padding: 5px; 
+  line-height: 1.4em;
+  margin: 0.75em 0 0.75em 0;
+  overflow: hidden;
+}
+
+table {
+		border-spacing: 10px; }
+
+header h1 {
+  font-size: 3em;
+  color:  #000;
+}
+
+header h5 {   
+  color:  #000;
+}
+
+footer {
+  margin-top: 3em;
+  margin-bottom: 2em;
+  padding: 1em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #663366;
+  font-family: 'Flamenco', cursive;
+}
+
+h2 {font-size: 2em; margin-top: 1em; margin-bottom: 0.5em}
+.sidebar h2 {font-size: 1.8em; }
+
+h3 {
+  font-size: 1.5em;
+}
+
+a:hover {color: #663366}
+
+.first {margin-top: 0}
+
+ul.links {margin-left: 0; padding-left: 1em; margin-top: 0; margin-bottom: 1em;}
+ul.links li {display: inline;}
+ul.links li:before { content: "• "; }
+
+ blockquote,  blockquote p ,  blockquote q{  
+  font-color: #000;
+  color: #000;
+  line-height: 1.1;
+  }
+  
+@media print {
+ html {margin: 1em;}
+ body{
+  font-size: 10pt;
+  color: #000;
+  line-height: 1.2;
+ }
+ header{
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+  .paleblue{
+    border: none;
+  }
+  .palewhite{
+    border: none;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    color: #333;
+    font-size: 11pt; 
+    margin-top: 0em; margin-bottom: 0em
+  }
+ footer {display: none}
+ .container {width: 100%}
+ .container .sixteen.columns {width: 100%}
+}
+
+.lab_container { position: relative; width: 75%; margin: 0 auto; padding: 0; }

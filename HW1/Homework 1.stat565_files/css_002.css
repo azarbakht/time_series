@@ -1,0 +1,24 @@
+@font-face {
+  font-family: 'Flamenco';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Flamenco'), local('Flamenco-Regular'), url(http://fonts.gstatic.com/s/flamenco/v6/eY_UZqPceqmE3GUQnY4AhfesZW2xOQ-xsNqO47m55DA.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Istok Web';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Istok Web Regular'), local('IstokWeb-Regular'), url(http://fonts.gstatic.com/s/istokweb/v10/EvPKapBawcLZ3hbihjhqAVtXRa8TVwTICgirnJhmVJw.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Istok Web';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Istok Web Bold'), local('IstokWeb-Bold'), url(http://fonts.gstatic.com/s/istokweb/v10/2koEo4AKFSvK4B52O_Mwaugdm0LZdjqr5-oayXSOefg.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Istok Web';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Istok Web Italic'), local('IstokWeb-Italic'), url(http://fonts.gstatic.com/s/istokweb/v10/8-xqDtEk6sZ61magDpsV8Y4P5ICox8Kq3LLUNMylGO4.woff2) format('woff2');
+}
