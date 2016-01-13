@@ -41,15 +41,15 @@ autocorrelation analysis examines this serial dependence <?>
 
 ```{r}
 plot(AirPassengers)
-AP <- AirPassengers
-start(AP)
-end(AP)
-frequency(AP)
+start(AirPassengers)
+end(AirPassengers)
+frequency(AirPassengers)
 plot(AirPassengers)
 summary(AirPassengers)
 layout(1:2)
-plot(aggregate(AP))
-boxplot(AP ~ cycle(AP))
+> takes an input matrix for the location of each plot in the graphics window
+plot(aggregate(AirPassengers))
+boxplot(AirPassengers ~ cycle(AirPassengers))
 ```
 
 plotting shows _patterns_, and _features_ of the data + *outliers* and *erroneous* values 
@@ -61,6 +61,6 @@ plotting shows _patterns_, and _features_ of the data + *outliers* and *erroneou
 2. seasonal variation = a repeating pattern within a fixed period (e.g. each year)
 3. cycles = a non-fixed-period cycle (without a fixed period). example: El-Nino
 
- 
+
 
 

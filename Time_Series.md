@@ -1,3 +1,9 @@
+---
+title: "Time Series"
+author: "Emerson Amirhosein  Azarbakht"
+output: pdf_document
+---
+
 # Time Series (TS)
 
 #### Used in
@@ -14,7 +20,7 @@
 
 #### Used to
 - to understand the past, and predict the future
-- forcasting (predicting inference, a subset of statistical inference)
+- forcasting (predicting inference, a subset of statistical inference). assumes that present trends continue. This assumption cannot be checked empirically, but, when we identify the likely causes for a trend, we can justify the forecasting(extrapolating it) for a few time-steps at least
 - anomaly detection
 - clustering
 - classification (assigning a time series pattern to a specific category: e.g. gesture recognition of hand movements in sign language videos)
@@ -33,9 +39,20 @@ autocorrelation analysis examines this serial dependence <?>
 - stationary process ?
 - Ergodic process ?
 
-```R
+```{r}
 plot(AirPassengers)
+start(AirPassengers)
+end(AirPassengers)
+frequency(AirPassengers)
+plot(AirPassengers)
+summary(AirPassengers)
+layout(1:2) 
+plot(aggregate(AirPassengers))
+boxplot(AirPassengers ~ cycle(AirPassengers))
 ```
+
+plotting shows _patterns_, and _features_ of the data + *outliers* and *erroneous* values 
+
 
 #### patterns
 1. trend = a non-periodic systematic change in a TS
@@ -43,6 +60,6 @@ plot(AirPassengers)
 2. seasonal variation = a repeating pattern within a fixed period (e.g. each year)
 3. cycles = a non-fixed-period cycle (without a fixed period). example: El-Nino
 
- 
+
 
 
