@@ -17,6 +17,7 @@ output: pdf_document
 - basis for signal processing in telecommunications <?>
 - disease incidence tracking, yearly rates
 - census analysis
+- tracking monthly unemployment rate; as an economic indicator used by decision makers
 
 #### Used to
 - to understand the past, and predict the future
@@ -24,7 +25,7 @@ output: pdf_document
 - anomaly detection
 - clustering
 - classification (assigning a time series pattern to a specific category: e.g. gesture recognition of hand movements in sign language videos)
-- query by content<?>
+- query by content ~ Content-based image retrieval
 
 #### Data: 
 a variable measured sequentially in time, or at a fixed [sampling] interval 
@@ -47,7 +48,7 @@ frequency(AirPassengers)
 plot(AirPassengers)
 summary(AirPassengers)
 layout(1:2)
-> takes an input matrix for the location of each plot in the graphics window
+# takes an input matrix for the location of each plot in the graphics window
 plot(aggregate(AirPassengers))
 boxplot(AirPassengers ~ cycle(AirPassengers))
 ```
@@ -61,6 +62,36 @@ plotting shows _patterns_, and _features_ of the data + *outliers* and *erroneou
 2. seasonal variation = a repeating pattern within a fixed period (e.g. each year)
 3. cycles = a non-fixed-period cycle (without a fixed period). example: El-Nino
 
+```{r}
+# monthly unemployment rate for the US state of Maine from January 1996 until August 2006
+Maine.month <- read.table("http://staff.elena.aut.ac.nz/Paul-Cowpertwait/ts/Maine.dat", header = TRUE)
+# header TRUE means treat first row as column names
+attach(Maine.month)
+str(Maine.month)
+head(Maine.month)
+class(Maine.month)
+# it's a data.frame, not a ts object. So, we need to convert it to ts
+Maine.month.ts <- ts(unemploy, start = c(1996, 1), freq = 12)
+Maine.month.ts
+Maine.annual.ts <- aggregate(Maine.month.ts)/12
+layout(1:2)
+plot(Maine.month.ts)
+plot(Maine.annual.ts)
+Maine.Feb <- window(Maine.month.ts, start = c(1996,2), freq = TRUE)
+Maine.Aug <- window(Maine.month.ts, start = c(1996,8), freq = TRUE)
+Feb.ratio <- mean(Maine.Feb) / mean(Maine.month.ts)
+Aug.ratio <- mean(Maine.Aug) / mean(Maine.month.ts)
+```
+
+```{r}
+# monthly unemployment rate for all of the United States from January 1996 until October 2006
+US.month <- read.table("http://staff.elena.aut.ac.nz/Paul-Cowpertwait/ts/USunemp.dat", header = T)
+attach(US.month)
+US.month.ts <- ts(USun, start=c(1996,1), end=c(2006,10), freq = 12)
+plot(US.month.ts, ylab = "unemployed (%)")
+```
 
 
+```{r}
 
+```

@@ -17,6 +17,7 @@ output: pdf_document
 - basis for signal processing in telecommunications <?>
 - disease incidence tracking, yearly rates
 - census analysis
+- tracking monthly unemployment rate; as an economic indicator used by decision makers
 
 #### Used to
 - to understand the past, and predict the future
@@ -24,7 +25,7 @@ output: pdf_document
 - anomaly detection
 - clustering
 - classification (assigning a time series pattern to a specific category: e.g. gesture recognition of hand movements in sign language videos)
-- query by content<?>
+- query by content ~ Content-based image retrieval
 
 #### Data: 
 a variable measured sequentially in time, or at a fixed [sampling] interval 
@@ -47,7 +48,7 @@ frequency(AirPassengers)
 plot(AirPassengers)
 summary(AirPassengers)
 layout(1:2)
-> takes an input matrix for the location of each plot in the graphics window
+# takes an input matrix for the location of each plot in the graphics window
 plot(aggregate(AirPassengers))
 boxplot(AirPassengers ~ cycle(AirPassengers))
 ```
@@ -61,6 +62,12 @@ plotting shows _patterns_, and _features_ of the data + *outliers* and *erroneou
 2. seasonal variation = a repeating pattern within a fixed period (e.g. each year)
 3. cycles = a non-fixed-period cycle (without a fixed period). example: El-Nino
 
+```{r}
+Maine.month <- read.table("http://staff.elena.aut.ac.nz/Paul-Cowpertwait/ts/Maine.dat", header = TRUE)
+# header TRUE means treat first row as column names
+attach(Maine.month)
+class(Maine.month)
+```
 
 
 
