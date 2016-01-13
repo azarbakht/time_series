@@ -58,7 +58,8 @@ plotting shows _patterns_, and _features_ of the data + *outliers* and *erroneou
 
 #### patterns
 1. trend = a non-periodic systematic change in a TS
-    can be modeled simply by a linear increase or decrease
+    * can be modeled simply by a linear increase or decrease. (only if it's deterministic ~ it's non-stochastic)
+    * stochastic trend: seems to change direction at unpredictable times rather than displaying a consistent pattern (e.g. like the air passenger series)
 2. seasonal variation = a repeating pattern within a fixed period (e.g. each year)
 3. cycles = a non-fixed-period cycle (without a fixed period). example: El-Nino
 
@@ -83,6 +84,9 @@ Feb.ratio <- mean(Maine.Feb) / mean(Maine.month.ts)
 Aug.ratio <- mean(Maine.Aug) / mean(Maine.month.ts)
 ```
 
+========
+
+##### natoionwide unemployment rate
 ```{r}
 # monthly unemployment rate for all of the United States from January 1996 until October 2006
 US.month <- read.table("http://staff.elena.aut.ac.nz/Paul-Cowpertwait/ts/USunemp.dat", header = T)
@@ -90,8 +94,42 @@ attach(US.month)
 US.month.ts <- ts(USun, start=c(1996,1), end=c(2006,10), freq = 12)
 plot(US.month.ts, ylab = "unemployed (%)")
 ```
+========
 
-
+#### Multiple TS 
 ```{r}
+ChocolateBeerElectricity <- read.table("http://staff.elena.aut.ac.nz/Paul-Cowpertwait/ts/cbe.dat", header = TRUE)
+class(ChocolateBeerElectricity)
+str(ChocolateBeerElectricity)
+Chocolate.ts <- ts(ChocolateBeerElectricity[,1], start = 1958, frequency = 12)
+Beer.ts <- ts(ChocolateBeerElectricity[,2], start = 1958, frequency = 12)
+Electricity.ts <- ts(ChocolateBeerElectricity[,3], start = 1958, frequency = 12)
+
+plot(cbind(Chocolate.ts, Beer.ts, Electricity.ts))
 
 ```
+
+========
+#### Climate change
+```{r}
+# Global temperature anomalies from the monthly means over the period
+GlobalTemperatures <- scan("http://staff.elena.aut.ac.nz/Paul-Cowpertwait/ts/global.dat")
+# scan to read data into a vector or list from the console or file.
+?scan
+str(GlobalTemperatures)
+GlobalTemperatures.ts <- ts(GlobalTemperatures, st = c(1856,1), end = c(2005,1), frequency = 12)
+head(GlobalTemperatures.ts)
+tail(GlobalTemperatures.ts)
+Global.annual <- aggregate(GlobalTemperatures.ts, FUN = mean)
+head(Global.annual)
+Global.annual
+plot(GlobalTemperatures.ts)
+plot(Global.annual)  
+
+#
+New.series <- window(GlobalTemperatures.ts, start=c(1970, 1), end=c(2004, 12))
+New.time <- time(New.series)
+plot(New.series)
+abline(reg = lm(New.series ~ New.time))
+```
+
