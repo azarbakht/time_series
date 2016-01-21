@@ -1,0 +1,148 @@
+---
+title: "ST565: Time Series HW1"
+author: "Amirhosein \"Emerson\" Azarbakht <azarbaka@oregonstate.edu>"
+output: pdf_document
+---
+
+# Q1
+
+Google maintains records of the popularity of search terms over time at http://www.google.com/trends You can examine daily data by selecting a time period of less than 90 days, otherwise you’ll see weekly or monthly data (e.g. searches for “hangover” in the last 90 days). The numbers reported are relative search volume. Your task is to find:
+
+- one search term dominated by a weekly or annual seasonal pattern: 
+  - Oktoberfest
+- one search term dominated by an increasing trend: 
+  - US Presidential Elections
+- one search term that would be poorly described by a combination of trend and seasonality: 
+  - Climate Change 
+
+In each case, you should download the relevant data as a .csv file (click on the … on the trends page), read the data into R and produce a plot of the data.
+
+## Q1.1. Weekly or Annual Seasonal pattern: Oktoberfest
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+options(stringsAsFactors = FALSE)
+
+setwd("/home/aha/Desktop/Time_Series_ST565/HW1/")
+data <- read.csv("Oktoberfest.csv")
+str(data)
+head(data)
+
+# Parse the dates
+#?parse_date_time
+#strptime(week, "%Y-%m-%d - %Y-%m-%d")
+data$StartDatePOSIX <- strptime(data$Week, "%F")
+data$EndDatePOSIX <- strptime(data$Week, "%F - %F")
+# parsed the dates as POSIX format
+
+# convert to Date format
+data$StartDate <- as.Date(data$StartDatePOSIX)
+data$EndDate <- as.Date(data$EndDatePOSIX)
+
+#data$searchFrequency <- data$oktoberfest
+data <- data %>% select(StartDate, oktoberfest) %>% rename(week = StartDate, frequency = oktoberfest)
+head(data)
+
+# plot frequency of keyword "Oktoberfest" search
+qplot(week, frequency, data = data, geom = "line", main = "Frequency of search for \"Oktoberfest\" keyword")
+```
+
+---
+
+## Q1.2. An increasing trend: U.S. Presidential Elections
+
+```{r}
+data <- read.csv("USPresidentialElections.csv")
+str(data)
+head(data)
+
+data$StartDate <-as.Date(strptime(data$Week, "%F"))
+data <- data %>% select(StartDate, us.presidential.elections) %>% rename(week = StartDate, frequency = us.presidential.elections)
+
+qplot(week, frequency, data = data, geom = "line", main = "Frequency of search for \"US Presidential Elections\" keyword")
+
+```
+---
+
+## Q1.3. One search term that would be poorly described by a combination of trend and seasonality: Climate Change 
+
+```{r}
+data <- read.csv("ClimateChange.csv")
+str(data)
+head(data)
+
+data$StartDate <- as.Date(strptime(data$Week, "%F")) 
+data <- data %>% select(StartDate, climate.change) %>% rename(week = StartDate, frequency = climate.change)
+
+qplot(week, frequency, data = data, geom = "line", main = "Frequency of search for \"Climate Change\" keyword")
+
+```
+
+---
+
+#Q2
+
+I’ve downloaded much higher resolution data from the Corvallis Municipal Airport weather station. I am giving you ten years of about thrice hourly (I think, you should probably check) observations. Download the data from: http://stat565.cwick.co.nz/data/corv_sub.rds. 
+
+Check out the structure, I’ve been nice and already converted the date and datetime to R date time classes.
+
+Before I move to a new place I like to look up what the climate is like there. But I normally end up looking at a graph that shows me the average min, mean and max temperature by month, and maybe total precipitation, and that doesn’t really help me decide how my day to day life will be affected by the weather. I’m much more interested in things like:
+
+- How often will I be biking to work in below freezing temperatures?
+- How many days a year will I see the sun?
+- How many days do I need a raincoat, assuming I’m only outside during my morning and evening commute?
+
+Your task is to create a climate metric that you would find useful, and by using the data provided and dplyr, calculate it and present it visually. (And since this is a statistics class you might give a thought to how you would quantify and present the variability in your metric).
+
+## Q2.1. When do heaviest percipitation happen in a day? (e.g. early morning? noon? evening?)
+
+```{r}
+corv <- readRDS("corv_sub.rds") 
+head(corv)
+str(corv)
+corv <- corv %>% rename(datePOSIX = date)
+corv$date <- as.Date(strptime(corv$datePOSIX, "%F"))
+
+# corvallisClean <- filter(corv, !is.na(precip))
+# head(corvallisClean)
+# attach(corvallisClean)
+
+qplot(factor(hour), precip, data = filter(corv, !is.na(precip)), geom = "jitter", alpha = I(1/3))
+
+# qplot(factor(hour), temp, data = filter(corv, !is.na(temp)), alpha = I(1/10))
+
+```
+
+## Q2.2. How much precipitation should I expect in a weather condition?
+
+```{r}
+attach(corv)
+# factor(conditions)
+
+qplot(factor(conditions), precip, data = filter(corv, !is.na(precip)), geom = "jitter")
+
+```
+
+## Q2.3. Which days of the year are rainy? 
+
+```{r}
+attach(corv)
+
+corv$month <- month(corv$date)
+corv$year <- year(corv$date)
+corv$yday <- yday(corv$date)
+
+head(corv)
+
+qplot(yday, precip, data = filter(corv, !is.na(precip)), geom = "jitter", alpha = I(1/4))
+
+
+```
+
+## Q2.4. Which days of the year are rainy? 
+
+```{r}
+qplot(month, precip, data = filter(corv, !is.na(precip)), geom = "jitter", alpha = I(1/4)) + scale_x_discrete()
+```

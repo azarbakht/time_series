@@ -1,7 +1,3 @@
-install.packages("ggplot2")
-install.packages("dplyr")
-install.packages("lubridate")
-
 library(ggplot2)
 library(dplyr)
 library(lubridate)
@@ -11,11 +7,6 @@ options(stringsAsFactors = FALSE)
 
 # read in the daily weather data
 corvallis <- read.csv(url("http://stat565.cwick.co.nz/data/corvallis.csv"))
-# or read in the daily weather data locally
-corvallis <- read.csv("corvallis.csv)")
-
-
-
 head(corvallis)
 tail(corvallis)
 
@@ -37,7 +28,6 @@ hot <- hot %>%
 ######################
 
 # PST is just a character string
-# find out its structure
 str(corv)
 corv$PST[1]
 
@@ -53,7 +43,7 @@ corv <- mutate(corv,
 # some strings to practice converting 
 A <- "1-7-14"
 B <- "Jan 7 14"
-C <- "1:15 AM 2014-01-07"
+C <- "1:15 PM 2014-01-07"
 D <- "3:25 PM"
 E <- "Tue Jan 7 2014"
 
@@ -68,6 +58,7 @@ qplot(date, temp, data = corv, geom = "line")
 # gaps come from missing values "NA"
 # straight lines come from ommitted records
 
+qplot(temp, precip, data = corv)
 
 #==== aggregation with plyr ====#
 last_year <- filter(corv, year == 2013)
@@ -130,3 +121,17 @@ qplot(temp, data = corv, geom = "density")
 # smaller bandwidth
 qplot(temp, data = corv, geom = "density", adjust = 0.25, fill = I("grey20"))
 
+
+
+last_year <- 
+
+mutate(filter(corv, year == 2013), 
+  avg_temp = mean(temp, na.rm = TRUE),
+  n_temp = sum(!is.na(temp))
+)
+eugene %>%
+  filter(year == 2013) %>% 
+  mutate( 
+    avg_temp = mean(temp, na.rm = TRUE),
+    n_temp = sum(!is.na(temp))
+  

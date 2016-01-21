@@ -1,5 +1,5 @@
 library(ggplot2)
-library(plyr)
+library(dplyr)
 library(lubridate)
 
 # for slides
@@ -10,7 +10,7 @@ load(url("http://stat565.cwick.co.nz/data/corv.rda"))
 all_days <- data.frame(date = seq(ymd("2000/01/01"), ymd("2013/12/31"),  
   by = "day"))
 # merge them together
-corv <- join(corv, all_days, type = "full")
+corv <- inner_join(corv, all_days)
 
 # redo years, months and ydays
 corv$year <- year(corv$date)
@@ -23,7 +23,8 @@ corv <- corv[order(corv$date), ]
 
 # == Aggregate == #
 # linear fit (think one-way ANOVA)
-year_fit <- lm(temp ~ factor(year), data = corv, na.action = na.exclude)
+year_fit <- lm(temp ~ factor(year), data = corv, 
+  na.action = na.exclude)
 corv$annual_avg <- predict(year_fit, newdata = corv)
 
 qplot(year, annual_avg, data = corv, geom = "line") 
@@ -37,11 +38,11 @@ corv_ts <- ts(corv$temp, start = 2000, freq = 365.25)
 
 # n is number of time points to average
 n <- 7 # we have daily data so this is a week
-corv$weekly_ma <- filter(corv_ts, filter = rep(1, n)/n)
+corv$weekly_ma <- stats::filter(corv_ts, filter = rep(1, n)/n)
 n <- 30 # approximately a month
-corv$monthly_ma <- filter(corv_ts, filter = c(1/2, rep(1, n-1), 1/2)/n)
+corv$monthly_ma <- stats::filter(corv_ts, filter = c(1/2, rep(1, n-1), 1/2)/n)
 n <- 365 # approximately a year
-corv$annual_ma <- filter(corv_ts, filter = rep(1, n)/n)
+corv$annual_ma <- stats::filter(corv_ts, filter = rep(1, n)/n)
 
 qplot(date, temp, data = corv, geom = "line", alpha = I(0.5)) +
   geom_line(aes(y = weekly_ma, colour = "weekly_ma"), size = 1) +

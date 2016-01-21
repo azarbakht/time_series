@@ -37,7 +37,12 @@ TS tries to explain this correlation (serial dependence)
 autocorrelation analysis examines this serial dependence <?>
 
 ### conditions (assumptions of TS)
-- stationary process ?
+- Stationary process:
+  * if there's no systematic change in mean (no trend) AND
+  * if there's no systematic change in variance, AND
+  * if strictly periodic variations have been removed
+    * i.e. the properties of one section of the data are much like those of any other section
+    * often we have a non-stationary TS => we need to remove trend and seasonality, to get a stationary residual, which then can be modeled using a stationary stochastic process 
 - Ergodic process ?
 
 ```{r}
@@ -57,7 +62,7 @@ plotting shows _patterns_, and _features_ of the data + *outliers* and *erroneou
 
 
 ### patterns
-1. trend = a non-periodic systematic change in a TS
+1. trend = a non-periodic systematic change in a TS: a long-term change in the 'mean'
     * can be modeled simply by a linear increase or decrease. (only if it's deterministic ~ it's non-stochastic)
     * stochastic trend: seems to change direction at unpredictable times rather than displaying a consistent pattern (e.g. like the air passenger series)
 2. seasonal variation = a repeating pattern within a fixed period (e.g. each year)
@@ -146,4 +151,57 @@ GlobalTemperatures1970to2005.time <- time(GlobalTemperatures1970to2005)
 plot(GlobalTemperatures1970to2005)
 abline(reg = lm(GlobalTemperatures1970to2005 ~ GlobalTemperatures1970to2005.time))
 ```
+
+--- 
+
+In statistics, usually, first thing, we compute the 'mean' and 'variance/standard deviation', which show 'location' and 'dispersion':
+
+- mean ~ location
+- variance ~ dispersion
+
+### Transformations
+
+Transform the data (e.g. log or square-root) when:
+
+1. if variance appears to increase with the mean.
+    * if standard deviation is directly proportional to the mean (a trend), LOG transform!
+    * if variance changes through time, but without a trend, transformation won't help. use a model that accommodates variance change
+2. if there's additive seasonal effect, i.e. size of seasonal effect increases with the mean, transform! to make seasonal effect constant. 
+    * If there's multiplicative seasonal effect, i.e. size of seasonal effect proportional to the mean, LOG transform! to make the seasonal effect additive. (variance gets stable, but error term will still remain unstable)
+3. if there are spikes in the data, (skewness), transform to normalize the data distribution.
+
+> avoid transformations, except where the transformed has a direct physical interpretation
+
+### Sample autocorrelation coefficients
+
+- a series of quantities, that measure the correlation between observations at different distances apart
+- show us which probability model to use for that data
+
+
+- negative correlation? shows high values of x tend to go with low values of y
+- zero correlation? shows two variables are independent
+
+#### serial correlation coefficients (e.g. at lag 1), 
+or autocorrelation coefficients
+
+- measures correlation between successive observations
+- serial correlation coefficients at lag k
+- if you graph it, it's called 'correlogram'
+- ac.f and correlogram is meaningful ONLY IF data is STATIONARY
+- ac.f and correlogram is meaningless for non-stationary
+
+### how to interpret a Correlogram
+
+- if r_0 = 1, r_1 = large value, r_2, r_3 = diminishingly successively smaller values, r_k = almost zero
+    then, TS: one observation 'above' the mean tends to be followed by more observations 'above' the mean, and
+              one observation 'below' the mean tends to be followed by more observations 'below' the mean
+
+- if r_0 = 1, r_1 = negative value, r_2 = positive value, r_3 = negative, ... (diminishingly successively smaller values)
+    then, TS: one observation 'above' the mean tends to be followed by more observations 'below' the mean,
+            aka alternating: successive observations on both sides of the overall mean
+
+- if r_0...k are all positive and large values, TS is non-stationary, and correlogram is meaningless
+
+- if r_0...k oscillate, TS is 'seasonal', e.g. sinusoidal. check at least 3 seasons worth of r_k
+
 
