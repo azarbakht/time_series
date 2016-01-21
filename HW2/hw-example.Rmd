@@ -1,36 +1,19 @@
 ---
-title: "ST565: Time Series HW1"
-author: "Amirhosein \"Emerson\" Azarbakht <azarbaka@oregonstate.edu>"
+title: "Example of data analysis homework"
 output: pdf_document
+subtitle: Average temperature in Corvallis
 layout: one-col
 ---
-# Data Analysis
 
-The United States Census Bureau collects and provides data on US retail sales through the Monthly Retail Trade Surveys. For this homework we analyse the estimates of the total monthly sales for motor vehicle and parts dealers in the USA from 1992 to 2014.
+This is an example of how your response for the data analysis section of the homework should be presented.
 
-```{r}
-load(url("http://stat565.cwick.co.nz/data/sales.rda"))
+Note:
 
-
-
-```
-
-There are two columms value with the estimates of monthly sales in millions of dollars, and date with the month for the estimate (this is already a Date in R, I used the 15th of the month arbitrarily).
-
-
-Summarise and describe the trend and seasonality in the monthly sales for motor vehicle and parts dealers.
-
-Remove the trend and seasonality to estimate residual noise.
-
-Examine the residual noise for non-stationarity in variance and for autocorrelation.
-
-
-
-
-```{r, include=FALSE}
-knitr::opts_chunk$set(echo=FALSE, message = FALSE, 
-  warning = FALSE, results = "hide", fig.height = 3, fig.width = 6) 
-```
+*  Use section headings to help the grader navigate (reflect these in your R code too).
+*  Plots should have English language labels (not R variables).
+*  You don't have to present every plot you make, just the ones that help tell the story
+*  You may write in an informal manner, think of this as a conversation with a colleague, not a journal article, but you should still aim for complete, grammatically correct sentences.
+* Put all your R code in the Appendix.
 
 ## Introduction
 ```{r}
@@ -129,9 +112,9 @@ ci <- qnorm((1 + 0.95)/2)/sqrt(corv_acf$n.used)
 The autocorrelation function for the estimated residuals is shown below, where a unit of lag is equal to one day.  The correlation in average temperature between one day and the next is quite high, `r round(corv_acf$acf[2], 2)`.  The correlation rapidly tails off and is negligible beyond two weeks.  This implies that, beyond the seasonal norms and long term trend, the temperature today is not useful for predicting the temperature in the future beyond about two weeks.
 
 ```{r}
-# qplot(Lag, ymin = 0, ymax = ACF, data = acf_df, geom = "linerange") +
-  # geom_hline(aes(yintercept = c(-ci, ci)), colour = "blue", linetype = "dashed") +
-  # ylab("Autocorrelation")
+qplot(Lag, ymin = 0, ymax = ACF, data = acf_df, geom = "linerange") +
+  geom_hline(aes(yintercept = 38), colour = "blue", linetype = "dashed") +
+  ylab("Autocorrelation")
 ```
 
 The stationarity of the variance of the residuals is examined by plotting the square of the residuals against time, and day of the year.  There is no obvious long term trend but the variability does seem to be higher in the winter months.

@@ -43,7 +43,7 @@ autocorrelation analysis examines this serial dependence <?>
   * if strictly periodic variations have been removed
     * i.e. the properties of one section of the data are much like those of any other section
     * often we have a non-stationary TS => we need to remove trend and seasonality, to get a stationary residual, which then can be modeled using a stationary stochastic process 
-- Ergodic process ?
+- Ergodic process: a stationary TS that we assume is sufficiently long time series that it characterises the hypothetical model. (~ independent of the starting point)
 
 ```{r}
 plot(AirPassengers)
@@ -158,6 +158,11 @@ In statistics, usually, first thing, we compute the 'mean' and 'variance/standar
 
 - mean ~ location
 - variance ~ dispersion
+
+or
+
+- mean ~ central location
+- variance ~ the spread
 
 ### Transformations
 
