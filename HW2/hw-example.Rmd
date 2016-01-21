@@ -15,6 +15,11 @@ Note:
 *  You may write in an informal manner, think of this as a conversation with a colleague, not a journal article, but you should still aim for complete, grammatically correct sentences.
 * Put all your R code in the Appendix.
 
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message = FALSE, 
+  warning = FALSE, results = "hide", fig.height = 3, fig.width = 6) 
+```
+
 ## Introduction
 ```{r}
 library(ggplot2)
@@ -113,7 +118,7 @@ The autocorrelation function for the estimated residuals is shown below, where a
 
 ```{r}
 qplot(Lag, ymin = 0, ymax = ACF, data = acf_df, geom = "linerange") +
-  geom_hline(aes(yintercept = 38), colour = "blue", linetype = "dashed") +
+  geom_hline(aes(yintercept = c(-ci, ci)), colour = "blue", linetype = "dashed") +
   ylab("Autocorrelation")
 ```
 

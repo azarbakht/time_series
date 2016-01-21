@@ -1,55 +1,80 @@
 ---
-title: "ST565: Time Series HW2"
+title: 'ST565: Time Series HW2'
 author: "Amirhosein \"Emerson\" Azarbakht <azarbaka@oregonstate.edu>"
 output: pdf_document
 layout: one-col
----
-# Data Analysis
 
-- Summarise and describe the trend and seasonality
-- Remove the trend and seasonality to estimate residual noise
-- Examine the residual noise for non-stationarity in variance and for autocorrelation.
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message = FALSE, 
+  warning = FALSE, results = "hide", fig.height = 3, fig.width = 6) 
+```
+
+---
 
 ## Introduction
 
 The United States Census Bureau collects and provides data on US retail sales through the Monthly Retail Trade Surveys. For this homework we analyse the estimates of the total monthly sales for motor vehicle and parts dealers in the USA from 1992 to 2014. 
 
-The monthly total sales for motor vehicles and parts dealers in the USA from 1992 to 2014 are shown below. The goal of this analysis is to describe the seasonality, trend and the properties of the residual variation in this series. 
-
 ```{r}
 library(plyr)
 library(lubridate)
-library(ggplot2)
 options(stringsAsFactors = FALSE)
 
 # import data
 load(url("http://stat565.cwick.co.nz/data/sales.rda"))
-class(sales)
+# class(sales)
 head(sales)
-tail(sales)
+# tail(sales)
 # sales <- sales %>% select(value)
-sales <- sales$value
+# sales <- sales$value
 
 # Convert to a Time Series object
-sales.month.ts <- ts(sales, start = c(1992, 1), frequency = 12)
-head(sales.month.ts)
-plot(sales.month.ts)
+sales.month.ts <- ts(sales$value, start = c(1992, 1), freq = 12)
+sales.month.ts
+```
+
+--- 
+
+The following plot shows the monthly total sales for motor vehicles and parts dealers in the USA from 1992 to the end of 2013. 
+We can see an upward trend from 1992 to 2007, followed by a sharp decrease in 2008, which picks back up again in 2009. 
+The plot also shows a seasonality which seems to be yearly. 
+
+```{r, fig.width=6, fig.height=6}
+plot(sales.month.ts, ylab = "Monthly Sales (Million Dollars)", xlab = "Year", main = "Total Monthly Sales")
 # create an annual aggregate object
 sales.annual.ts <- aggregate(sales.month.ts)/12
-head(sales.annual.ts)
-plot(sales.annual.ts)
+sales.month.aggregated.ts <- aggregate(sales.month.ts)
+# head(sales.annual.ts)
+# plot(sales.annual.ts)
+```
 
-layout(1:2)
-plot(sales.month.ts, ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales")
-plot(sales.annual.ts, ylab = "Annual Sales (millions Dollars)", main = "Total Annual Sales")
+The following plot shows total annual sales, aggregated for years 1992-2014. The sharp decrease around 2008 is easier to see in this aggregated plot.  
+```{r}
+# layout(1:1)
+# plot(sales.month.ts, ylab = "Monthly Sales (Million Dollars)", xlab = "Year", main = "Total Monthly Sales")
+plot(sales.annual.ts, ylab = "Annual Sales (Million Dollars)", xlab = "Year", main = "Total Annual Sales")
+```
 
+If we zoom in, to explore the period leading up to and including 2008, as in the following plots, we see how the year 2008 experienced the sharp fall of motor vehicle and parts in the US.
+
+```{r}
 # explore the dip, zoom in to see better resolution
 plot(window(sales.month.ts, start=c(2005, 1), end=c(2012, 12)), ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 2005-2012")
+```
 
-plot(window(sales.month.ts, start=c(2006, 1), end=c(2011, 12)), ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 2007-2011")
+Zooming further in:
 
-plot(window(sales.month.ts, start=c(2007, 1), end=c(2008, 12)), ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 2007-2011")
+```{r}
+plot(window(sales.month.ts, start=c(2007, 1), end=c(2011, 12)), ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 2007-2011")
 
+# plot(window(sales.month.ts, start=c(2007, 1), end=c(2008, 12)), ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 2007-2011")
+```
+
+Looking at the actual values might help. We can compare the figures from 2006, which seems to be a typical year leading to the crash of 2008.
+
+```{r, fig.width=6, fig.height=6}
 sales.1992to2007 <- window(sales.month.ts, start=c(1992, 1), end=c(2007, 12))
 sales.2008 <- window(sales.month.ts, start=c(2008, 1), end=c(2008, 12))
 sales.2009to2013 <- window(sales.month.ts, start=c(2009, 1), end=c(2013, 12))
@@ -58,18 +83,18 @@ sales.2006 <- window(sales.month.ts, start=c(2006, 1), end=c(2006, 12))
 sales.2006
 sales.2008
 
-plot(sales.1992to2007, ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 1992-2007")
-plot(sales.2009to2013, ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 2009-2014")
-
-layout(1:2)
-plot(sales.2006, ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 2006", col = "blue")
-plot(sales.2008, ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 2008", col = "red")
-
+# plot(sales.1992to2007, ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 1992-2007")
+# plot(sales.2009to2013, ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 2009-2014")
+# layout(1:2)
+# plot(sales.2006, ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 2006", col = "blue")
+# plot(sales.2008, ylab = "Monthly Sales (millions Dollars)", main = "Total Monthly Sales for 2008", col = "red")
 ```
 
-# Decomposition
+# Decomposition: Trend, Seasonality
 
-```{r}
+The following plot shows the original time series, the trend, the seasonality, and the residual noise. 
+
+```{r, fig.width=6, fig.height=6}
 # plot(decompose(sales.month.ts))
 # plot(decompose(sales.month.ts, type = "add"))
 # plot(decompose(sales.month.ts, type = "mult"))
@@ -78,51 +103,50 @@ sales.month.ts.decomposed <- decompose(sales.month.ts, type = "add")
 Trend <- sales.month.ts.decomposed$trend
 Seasonal <- sales.month.ts.decomposed$seasonal
 Noise <- sales.month.ts.decomposed$random
-str(sales.month.ts.decomposed)
+plot(sales.month.ts.decomposed)
+# str(sales.month.ts.decomposed)
+```
 
+The superimposed Trend + Seasonality plot shows how trend and seasonality look with the noise removed. 
+
+```{r, fig.width=6, fig.height=6}
 ts.plot(cbind(Trend, Trend + Seasonal), lty = 1:2, main = "Superimposed Trend + Seasonality", ylab = "Monthly Sales (Million Dollars)")
-
 ```
-
-## Trend
-
-```{r}
-
-```
-
-## Seasonality
-
-```{r}
-
-```
-
 
 ## Residual Noise
 
-Examine the residual noise for non-stationarity in variance and for autocorrelation.
+The following plot shows the correlogram of residual noise, which shows a weakly stationary process.
 
-```{r}
-# ?acf
-
+```{r, fig.width=6, fig.height=6}
 # correlogram
-acf(Noise, na.action = na.pass, main = "Correlogram of Residual Noise")
+acf(Noise, na.action = na.pass, lag.max = 100, main = "Correlogram of Residual Noise")
 # acf(Noise, na.action = na.pass)$acf[1:10]
+```
 
+We can also look at the autocorrelation for lag 1 top check for correlations:
+
+```{r, fig.width=6, fig.height=6}
 # scatterplot of each autocorrelation for lag 1
 # length(Noise)
 plot(Noise[1:length(Noise)-1], Noise[2:length(Noise)], xlab = "Noise values at times 1...t-1", ylab = "Noise values at times 2...t", main = "Scatterplot of each autocorrelation for lag 1 to check for correlations")
 
 # get autocovariances
 # acf(Noise,type = c("covariance"), na.action = na.pass)$acf[2]
-
 ```
 
+Out of curiosity, I decomposed the residual noise, looking for a trend and seasonality, and interestingly, the trend in the noise, follows a similar pattern as the trend in the signal. Even though, with the trend and seasonality removed from the residual noise, the residual noise OF the residual noise, is identical to the residual noise. (:-?)
 
+```{r, fig.width=6, fig.height=6}
+# let's decompose the noise to see if there's any trends
+Noise.decomposed <- decompose(Noise)
+plot(Noise.decomposed)
+```
 
-In summary, 
+In summary, it's visible that in 2008, the motor vehicle and parts dealers in the USA experienced a shock to their sales. I assume this can be attributed to the 2008 financial crisis. 
 
-*  The greatest source of variation in daily temperatures in Corvallis is the annual pattern, warm temperatures in the summer, cool in the winter.
-*  There doesn't appear to be a systematic trend in the temperatures, although 2008 & 2009 appeared to be cooler than average
-*  The serial correlation of daily temperatures (beyond the seasonal norms and trend) is high but falls rapidly and is negligible on a time scale of two weeks.
-*  The variation in temperature is higher during the winter but shows no long term changes.
+## Appendix
+
+```{r, all-code, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+
+```
 
