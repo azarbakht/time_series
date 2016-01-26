@@ -1,0 +1,26 @@
+---
+title: 'ST565: Time Series HW3'
+author: "Amirhosein \"Emerson\" Azarbakht <azarbaka@oregonstate.edu>"
+output: pdf_document
+layout: one-col
+
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message = FALSE, 
+  warning = FALSE, results = "hide", fig.height = 3, fig.width = 6) 
+```
+
+---
+
+## Introduction
+
+Lorem ipsum
+
+
+## Appendix
+
+```{r, all-code, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+
+```
+

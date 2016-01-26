@@ -209,4 +209,137 @@ or autocorrelation coefficients
 
 - if r_0...k oscillate, TS is 'seasonal', e.g. sinusoidal. check at least 3 seasons worth of r_k
 
+### Covariance
+
+$$ Cov(x,y) = E(xy) - E(x)E(y)$$
+$$Var(x+y) = Var(x) + Var(y) + 2 Cov(x,y)$$
+
+## Basic stochastic models
+
+- residual error series =     observed data - fitted values (from the model)
+- if our model is good (i.e. captures the deterministic features of the TS)
+  * then residual TS should be a realization of independent random variables from a probability distribution
+
+### White Noise (WN) [stochastic model for modeling residual TS]
+
+- a TS is discrete WN, if the observations (variables) $w_1, ..., w_t$ are I.I.D. with mean = zero, and all variables have same variance $\sigma^2$ and their pairwise Covariance is zero. 
+  * if, additionally, they are normally distributed, then it's Gaussian WN.
+  
+
+
+- mean = 0
+- $Cov(w_i, w_j) = 0 for all i != j$
+  
+#### Simulation: to make a synthetic TS (vs. observed TS)
+
+
+Why simulate?
+
+- generate plausible future scenarios
+- bootstrapping: constructing confidence intervals for the model parameters
+
+
+```{r}
+# provide a starting point for the random generation function, to make sure the random generation can be reproduced next time you're running the code, to get the same data
+set.seed(1)
+
+# rnorm simulates 100 random variables that are standard normal and independent
+# which can be used as a Gaussian WN TS of length 100
+w <- rnorm(100)
+
+plot(w, type = "l")
+
+# ?dnorm
+# w2 <- dnorm(w, mean = 0, sd = 1, log = FALSE)
+# plot(w2, type = "l")
+
+
+x <- seq(-3,3, length = 1000)
+hist(rnorm(100), prob = T)
+points(x, dnorm(x), type = "l")
+
+# correlogram of WN TS
+set.seed(200)
+acf(rnorm(200))
+# the correlations (for lag > 1) is (almost because of sampling variation) zero for almost all (95%)
+```
+
+### Random Walk (RW) TS [stochastic model for modeling residual TS]
+
+is a good model to fit to data with stochastic trends (not as good as ARIMA though)
+
+TS ${x_t}$ is a RW, if $$x_t = x_{t-1} + w_t$$, where $w_t$ is a WN TS. So, we can back substitute $x_{t-1}$ with $x_{t-2} + w_{t-1}$ and so on, and get: $$x_t = w_1 + w_2 + w_3 + ... + w_t$$ (i.e. a finite sum of WN, each with mean = zero and var = $\sigma^2$ )
+
+- mean = 0
+- $Cov(x_t,x_{t+k}) = t\sigma^2$ => TS is non-stationary because the Covariance depends on time t. variance increases as t increases => RW model is good ONLY for short-term predictions
+
+#### backshift(lag) operator (B)
+
+$B x_t = x_{t-1}$
+$B^n x_t = x_{t-n}$
+
+#### difference operator (to make a stationary TS from a non-stationary TS)
+
+$$\Delta x_t = x_t - x_{t-1}$$
+
+$$\Delta x_t = (1 - B) x_t$$
+
+$$\Delta^n = (1 - B)^n$$
+
+```{r}
+# generate WN TS as w
+x <- w <- rnorm(1000)
+# make a RW TS using backshift and WN TS
+for (t in 2:1000) x[t] <- x[t - 1] + w[t]
+# plot the RW TS with lines
+plot(x, type = "l")
+# draw the RW TS correlogram
+acf(x)
+```
+
+#### diagnosis of a RW TS:
+
+its correlogram should look like this:
+```{r}
+?diff
+# this correlogram shows a RW TS (as a diagnostic tool)
+acf(diff(x))
+```
+
+### Random Walk with drift TS [stochastic model for modeling residual TS]
+
+e.g. for stocks, stockholders expect the value of their investment to increase despite the volatility of financial markets. (this increase can be mapped by a drift (upwards) parameter (delta))
+
+$$x_t = x_{t-1} + \delta + w_t$$
+
+```{r}
+# HP stock prices
+HP.dat <- read.table("http://staff.elena.aut.ac.nz/Paul-Cowpertwait/ts/HP.txt", header = T)
+attach(HP.dat)
+# plot the stock price TS
+plot (as.ts(HP.dat$Price))
+# calculate drift parameter \delta
+drift <- diff(Price)
+plot (as.ts(drift))
+# check correlogram of drift to make sure it's a WN TS 
+acf(drift)
+# calculate confidence interval
+mean(drift) + c(-2, 2) * sd(drift)/sqrt(length(drift))
+```
+
+### AutoRegressive TS of order p AR(p)[stochastic model for modeling residual TS]
+
+when the model is a regression of $x_t$ on its past terms from the same TS.
+
+$$x_t = \alpha_1 x_{t-1} + \alpha_2 x_{t-2} + ... + \alpha_p x_{t-p} + w_t$$ 
+
+where
+
+- $w_t$ is WN TS
+- $\alpha_i$ are model parameters
+- $\alpha_p \neq 0$ for an AR(p) TS
+
+
+
+
 
