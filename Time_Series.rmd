@@ -463,4 +463,64 @@ $$\theta_p(B) x_t = \phi_q(B) w_t$$
 - ARMA(0,q) = MA(q)
 - ARMA(p,q) is better (parameter efficient) than either a single AR(p) or MA(q)
 
+```{r}
+set.seed(1)
+# simulate an ARMA data with alpha = -0.6 and beta = 0.5
+x <- arima.sim(n = 10000, list(ar = -0.6, ma = 0.5))
+# fit an ARMA(1,1) model to the simulated data using c(p,0,q)
+coef(arima(x, order = c(1, 0, 1)))
+```
 
+Now, let's compare AR(p), MA(q), and ARMA(p,q)
+
+```{r}
+x.ma <- arima(x.ts, order = c(0, 0, 1))
+x.ar <- arima(x.ts, order = c(1, 0, 0))
+x.arma <- arima(x.ts, order = c(1, 0, 1))
+AIC(x.ma)
+AIC(x.ar)
+AIC(x.arma)
+# the smaller the AIC or BIC, the better the fit => ARMA(1,1) provides the best fit
+x.arma
+
+# correlogram of residuals of fitted ARMA(1,1) model
+acf(resid(x.arma))
+```
+
+example: electricity production series
+
+```{r}
+CBE <- read.table("http://staff.elena.aut.ac.nz/Paul-Cowpertwait/ts/cbe.dat", header = T)
+Elec.ts <- ts(CBE[, 3], start = 1958, freq = 12)
+Time <- 1:length(Elec.ts)
+Imth <- cycle(Elec.ts)
+Elec.lm <- lm(log(Elec.ts) ~ Time + I(Time^2) + factor(Imth))
+acf(resid(Elec.lm))
+
+# find the best p and q for ARMA(p,q)
+best.order <- c(0, 0, 0)
+best.aic <- Inf
+for (i in 0:2) for (j in 0:2) {
+  fit.aic <- AIC(arima(resid(Elec.lm), order = c(i, 0,j)))
+  if (fit.aic < best.aic) {
+    best.order <- c(i, 0, j)
+    best.arma <- arima(resid(Elec.lm), order = best.order)
+    best.aic <- fit.aic
+  }
+}
+# what's the best order found:
+best.order
+# correlogram
+acf(resid(best.arma))
+
+## prediction
+new.time <- seq(length(Elec.ts), length = 36)
+new.data <- data.frame(Time = new.time, Imth = rep(1:12,3))
+# predict using the fitted regression model of class lm 
+predict.lm <- predict(Elec.lm, new.data)
+# predict using the fitted ARMA model, number of timesteps ahead to predict; here = 36 ~ predict for the next three years
+predict.arma <- predict(best.arma, n.ahead = 36)
+# convert the predicted values to TS object
+elec.pred <- ts(exp(predict.lm + predict.arma$pred), start = 1991, freq = 12)
+ts.plot(cbind(Elec.ts, elec.pred), lty = 1:2)
+```
