@@ -228,7 +228,7 @@ $$Var(x+y) = Var(x) + Var(y) + 2 Cov(x,y)$$
 
 
 - mean = 0
-- $Cov(w_i, w_j) = 0 for all i != j$
+- $Cov(w_i, w_j) = 0 for all i \neq j$
   
 #### Simulation: to make a synthetic TS (vs. observed TS)
 
@@ -339,7 +339,128 @@ where
 - $\alpha_i$ are model parameters
 - $\alpha_p \neq 0$ for an AR(p) TS
 
+i.e. value of TS at time t depends not only on t-1 but t-2 and ... t-p (i.e. p steps back)
+
+$$\theta(B)x_t = (1 - \alpha_1 B^1 - \alpha_2 B^2 - ... - \alpha_p B^p)x_t = w_t$$
+
+#### how to tell if an AR(p) TS is stationary or non-stationary?
+
+$\theta(B) = 1 - \alpha_1 B^1 - \alpha_2 B^2 - ... - \alpha_p B^p$ is called characteristic equation (CE). 
+
+- If all roots of CE for an AR(p) are > 1, (their absolute value is > 1), AR(p) is stationary. 
+- If even one of the roots of CE is <= 1 in absolute value, then AR(p) is non-stationary.
+
+```{r}
+# find roots of a polynomial
+polyroot(c(1, 2, 1))
+
+rho <- function(k, alpha) alpha^k
+layout(1:2)
+plot(0:10, rho(0:10, 0.7), type = "b")
+plot(0:10, rho(0:10, -0.7), type = "b")
+
+set.seed(1)
+x <- w <- rnorm(100)
+for (t in 2:100) x[t] <- 0.7 * x[t - 1] + w[t]
+plot(x, type = "l")
+acf(x)
+pacf(x)
+```
+
+#### AR(p) TS model fitting in R
+
+```{r}
+# fit an AutoRegression AR(p) model
+x.ar <- ar(x, method = "mle")
+
+x.ar$order
+
+# parameter estimate (alpha bar)
+x.ar$ar
+x.ar$asy.var
+x.ar$ar + c(-2, 2) * sqrt(x.ar$asy.var)
+
+# str(x.ar)
+```
+
+---
+# Stationary Models
+
+#### Strictly stationary TS
+
+A time series model ${x_t}$ is strictly stationary if the joint statistical distribution of $x_{t1}, ..., x_{tn}$ is the same as the joint distribution of $x_{t1+m}, ..., x_{t_{n+m}}$ for
+all $t_1, ..., t_n$ and m, so that the distribution is unchanged after an arbitrary
+time shift.
+
+- mean and variance are constant in time
+- $Cov(x_t, x_s)$ only depends on the lag $k = |t - s|$
+
+## Moving Average MA(q) TS model
+
+MA(q) is a linear combination of current WN and the most recent past WN terms:
+
+$$ x_t = w_t + \beta_1 w_{t-1} + ... + \beta_q w_{t - q} $$
+
+where ${w_t}$ is a WN TS with 
+
+- mean = zero
+- variance = $\sigma^2_w$
+
+$$x_t = (1 + \beta_1B + \beta_2B^2 + ... + \beta_qB^q)w_t = \phi_q(B)w_t$$
+
+- $\phi_q$ is a polynomial of order q. 
+- MA is stationary because it consists of a finite sum of stationary WN terms
+- MA has time-invariant mean and time-invariant autocovariance
+
+#### invertible MA(q) process
+
+- if an MA(q) TS can be expressed as a stationary AR(infiniti) process of infinite order without an error term, it's invertible. 
+- if the roots of $\phi_q(B)$ > 1 is absolute value, MA(q) is invertible. 
+
+e.g. $$x_t = (1 - \beta B)w_t$$ is invertible:
+$$w_t = (1-\beta B)^{-1}x_t$$ if $|\beta| < 1$ (condition for convergence)
+
+```{r}
+# to fit an MA(q) model to TS data, use
+## arima(TSdata, order = c(0, 0, q))
+x.ma <- arima(x, order = c(0, 0, 3))
+x.ma
+```
+
+Example:
+
+```{r}
+x <- read.table("http://staff.elena.aut.ac.nz/Paul-Cowpertwait/ts/pounds_nz.dat", header = T)
+x.ts <- ts(x, st = 1991, fr = 4)
+
+# fit an MA(1) model to the data
+x.ma <- arima(x.ts, order = c(0, 0, 1))
+# check the variance
+x.ma
+# variance is 0.04172. more than the variance that we got from fitting a AR(1) model to the same data (with variance = 0.03125):
+ar(x.ts)
+# so AR(1) is a better model than MA(1) for this data.
+
+acf(x.ma$res[-1])
+```
+
+---
+### ARMA(p,q) models: AR(p) + MA(q) combined together: AutoRegressive Moving Average
+
+- AR(p):
+$$x_t = \alpha_1 x_{t-1} + \alpha_2 x_{t-2} + ... + \alpha_p x_{t-p} + w_t$$ 
+- MA(q):
+$$ x_t = w_t + \beta_1 w_{t-1} + ... + \beta_q w_{t - q} $$
+- ARMA(p,q):
+$$x_t = \alpha_1 x_{t-1} + \alpha_2 x_{t-2} + ... + \alpha_p x_{t-p} + w_t + \beta_1 w_{t-1} + ... + \beta_q w_{t - q} $$
 
 
+$$\theta_p(B) x_t = \phi_q(B) w_t$$
+
+- ARMA(p,q) TS is STATIONARY if roots of $\theta$ > 1 in absolute value
+- ARMA(p,q) TS is INVERTIBLE if roots of $\phi$ > 1 in absolute value
+- ARMA(p, 0) = AR(p)
+- ARMA(0,q) = MA(q)
+- ARMA(p,q) is better (parameter efficient) than either a single AR(p) or MA(q)
 
 
