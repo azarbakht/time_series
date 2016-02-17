@@ -1,0 +1,70 @@
+---
+title: 'ST565: Time Series HW5'
+author: "Amirhosein \"Emerson\" Azarbakht <azarbaka@oregonstate.edu>"
+output: pdf_document
+layout: one-col
+
+---
+
+Required reading 5.4 & 5.5 in Chatfield
+
+## Question 1
+
+### Fit a seasonal ARIMA model to the Johnson and Johnson quarterly returns data in the package astsa and forecast the next 12 quarters (including prediction intervals).
+
+```{r}
+# install.packages("astsa")
+library(astsa)    
+data(jj)
+ts.plot(jj)
+
+
+get.best.arima <- function(x.ts, maxord = c(1,1,1,1,1,1)) {
+  best.aic <- 1e8
+  n <- length(x.ts)
+  for (p in 0:maxord[1]) for(d in 0:maxord[2]) for(q in 0:maxord[3])
+    for (P in 0:maxord[4]) for(D in 0:maxord[5]) for(Q in 0:maxord[6])
+      {
+      fit <- arima(x.ts, order = c(p,d,q), seas = list(order = c(P,D,Q), frequency(x.ts)), method = "CSS")
+      fit.aic <- -2 * fit$loglik + (log(n) + 1) * length(fit$coef)
+      if (fit.aic < best.aic)
+        {
+        best.aic <- fit.aic
+        best.fit <- fit
+        best.model <- c(p,d,q,P,D,Q)
+        }
+      }
+  list(best.aic, best.fit, best.model)
+}
+
+
+
+# best.arima <- get.best.arima(jj, maxord = c(3,3,3,3,3,3))
+best.arima <- get.best.arima(jj, maxord = c(2,2,2,2,2,2))
+best.fit <- best.arima[[2]]
+
+acf(best.fit$residuals)
+pacf(best.fit$residuals)
+
+best.arima [[3]]
+
+plot(best.fit$residuals)
+qqnorm(best.fit$residuals)
+qqline(best.fit$residuals)
+
+ts.plot(cbind(window(jj,start = 1960), predict(best.fit, 12)$pred), lty = 1:2)
+
+as1 <- sarima(jj, 1,1,2,0,1,0,4)
+as2 <- sarima(jj, 2,1,1,1,1,0,4)
+
+ts.plot(cbind(window(jj,start = 1960), predict(as2$fit, 12)$pred), lty = 1:2)
+
+```
+
+## Question 2: The Holt Winters Method
+
+- Read 5.2.3. in Chatfield
+- What decisions need to be made to use a Holt Winters forecasting approach? What starting values do you need to specify? What parameters need estimating?
+- Investigate the R function HoltWinters. How do you specify the decisions from above? How does the function choose starting values and estimate parameters?
+- Use the function to produce forecasts (along with prediction intervals) for Johnson and Johnson returns in question 1.
+

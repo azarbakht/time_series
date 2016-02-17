@@ -524,3 +524,13 @@ predict.arma <- predict(best.arma, n.ahead = 36)
 elec.pred <- ts(exp(predict.lm + predict.arma$pred), start = 1991, freq = 12)
 ts.plot(cbind(Elec.ts, elec.pred), lty = 1:2)
 ```
+
+how to tell if a correlogram is of AR(1), MA(1) or WN
+
+AR(1): smooth decay
+AR(1) with negative correlation: smooth decay, alternating positive and negative
+MA(1): lag 0 = 1, lag 1 = beta_1
+WN: lag 0 = 1, the rest are almost zero. 
+
+classmates: Dan & Paolo
+
