@@ -10,22 +10,29 @@ layout: one-col
 
 ---
 
-# A New Topic: Intervention Analysis and Outlier Detection in Time Series
+# A New Topic: Outlier Detection (and possibly Intervention Analysis) in Time Series
 
 
 ### What we plan on doing
 
-
+- Investigate what models are out there to detect outliers
+  - describe additive and innovational outlier types
+- Describe an algorithm for detecting those outliers
+  - Iterative procedures
+- Basic implementation through the use of the R package "tsoutliers"
+- Experiment analysis
 
 ### How we plan to present it 
 
-
+We will submit the written paper. 
 
 ### References we plan to use
 
 - R package "tsoutliers"
 - Book: "Time Series Analysis: Univariate and Multivariate Methods", By: "William W. S. Wei". Chapter 9: Intervention Analysis and Outlier Detection
+- Paper: "Joint Estimation of Model Parameters and Outlier Effects in Time Series", By "Chung Chen and Lon-Mu Liu", Journal of the American Statistical Association, Vol. 88, No. 421 (Mar., 1993), pp. 284-297"
 
 ### An idea for an example.
 
-
+- The Industrial Production Indices (IPI) dataset in the manufacturing sector of several European Countries, monthly data for 13 years, for the 2000-2013 period
+  - This time series should cover the 2008 economic crisis
