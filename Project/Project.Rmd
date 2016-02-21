@@ -15,8 +15,17 @@ layout: one-col
 
 ### What we plan on doing
 
+
+
 ### How we plan to present it 
+
+
 
 ### References we plan to use
 
+- R package "tsoutliers"
+- Book: "Time Series Analysis: Univariate and Multivariate Methods", By: "William W. S. Wei". Chapter 9: Intervention Analysis and Outlier Detection
+
 ### An idea for an example.
+
+
