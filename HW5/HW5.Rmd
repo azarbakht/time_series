@@ -14,6 +14,7 @@ Required reading 5.4 & 5.5 in Chatfield
 
 ```{r}
 # install.packages("astsa")
+library(forecast)
 library(astsa)    
 data(jj)
 ts.plot(jj)
@@ -22,8 +23,8 @@ ts.plot(jj)
 get.best.arima <- function(x.ts, maxord = c(1,1,1,1,1,1)) {
   best.aic <- 1e8
   n <- length(x.ts)
-  for (p in 0:maxord[1]) for(d in 0:maxord[2]) for(q in 0:maxord[3])
-    for (P in 0:maxord[4]) for(D in 0:maxord[5]) for(Q in 0:maxord[6])
+  for (p in 0:maxord[1]) for(d in 1:maxord[2]) for(q in 0:maxord[3])
+    for (P in 0:maxord[4]) for(D in 1:maxord[5]) for(Q in 0:maxord[6])
       {
       fit <- arima(x.ts, order = c(p,d,q), seas = list(order = c(P,D,Q), frequency(x.ts)), method = "CSS")
       fit.aic <- -2 * fit$loglik + (log(n) + 1) * length(fit$coef)
@@ -38,8 +39,6 @@ get.best.arima <- function(x.ts, maxord = c(1,1,1,1,1,1)) {
 }
 
 
-
-# best.arima <- get.best.arima(jj, maxord = c(3,3,3,3,3,3))
 best.arima <- get.best.arima(jj, maxord = c(2,2,2,2,2,2))
 best.fit <- best.arima[[2]]
 
@@ -52,19 +51,52 @@ plot(best.fit$residuals)
 qqnorm(best.fit$residuals)
 qqline(best.fit$residuals)
 
-ts.plot(cbind(window(jj,start = 1960), predict(best.fit, 12)$pred), lty = 1:2)
+prediction <- predict(best.fit, 12)
+prediction
 
-as1 <- sarima(jj, 1,1,2,0,1,0,4)
-as2 <- sarima(jj, 2,1,1,1,1,0,4)
+ts.plot(cbind(window(jj,start = 1960), prediction$pred), lty = 1:2)
 
-ts.plot(cbind(window(jj,start = 1960), predict(as2$fit, 12)$pred), lty = 1:2)
+lines(prediction$pred, lty = 1:2, col = "blue") 
+lines(prediction$pred - (2 * prediction$se), lty = 1:2, col = "grey") 
+lines(prediction$pred + (2 * prediction$se), lty = 1:2, col = "grey")
 
 ```
 
 ## Question 2: The Holt Winters Method
 
-- Read 5.2.3. in Chatfield
-- What decisions need to be made to use a Holt Winters forecasting approach? What starting values do you need to specify? What parameters need estimating?
-- Investigate the R function HoltWinters. How do you specify the decisions from above? How does the function choose starting values and estimate parameters?
-- Use the function to produce forecasts (along with prediction intervals) for Johnson and Johnson returns in question 1.
+### What decisions need to be made to use a Holt Winters forecasting approach? What starting values do you need to specify? What parameters need estimating?
 
+- If data contains trend and seasonality, we can use Holt Winters method, rather than Simple Exponential Smoothing method. 
+
+- Plot the data, examine whether the variance is constant or varying through time. If former case, choose an additive method, if latter case, choose a multiplicative method.
+
+- We need to specify starting values for $L_1, T_1$, and $I_{1...s}$ for the first year, using the first few observations in the time series. For example, we can use $L_1 = \sum x_i/s$.
+
+- Values for $\alpha, \gamma, \delta$ need to be estimated by minimizing the square one-step prediction error $\sum e_t^2$.
+
+- Decide whether to normalize the seasonal indices at reguilar intervals by making them sum to zero for the additive case, and sum to 1 for the multiplicative case. 
+
+- Choose an automatic approach or non-automatic. 
+
+### Investigate the R function HoltWinters. How do you specify the decisions from above? How does the function choose starting values and estimate parameters?
+
+Using the function options, e.g. seasonal = c("additive", "multiplicative"), etc. 
+
+```{r}
+# HoltWinters(x, alpha = NULL, beta = NULL, gamma = NULL, seasonal = c("additive", "multiplicative"), start.periods = 2, l.start = NULL, b.start = NULL, s.start = NULL, optim.start = c(alpha = 0.3, beta = 0.1, gamma = 0.1), optim.control = list())
+```
+
+According to R documentation: 
+"For seasonal models, start values for a, b and s are inferred by performing a simple decomposition in trend and seasonal component using moving averages (see function decompose) on the start.periods first periods (a simple linear regression on the trend component is used for starting level and trend). For level/trend-models (no seasonal component), start values for a and b are x[2] and x[2] - x[1], respectively. For level-only models (ordinary exponential smoothing), the start value for a is x[1]."
+
+### Use the function to produce forecasts (along with prediction intervals) for Johnson and Johnson returns in question 1.
+
+```{r}
+hwt <- HoltWinters(jj, seasonal = "multiplicative", start.periods = 2)
+hwt$SSE
+plot(hwt)
+predictHW <- predict(hwt,n.ahead = 12, prediction.interval = TRUE, level = 0.95)
+hwtfit <- hw(jj, seasonal="multiplicative")
+plot(hwtfit)
+
+```

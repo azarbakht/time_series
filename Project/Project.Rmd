@@ -1,0 +1,22 @@
+---
+title: 'ST565: Time Series Project 0'
+author: | 
+  | Amirhosein "Emerson"  Azarbakht <azarbaka@oregonstate.edu>
+  | Camden Lee  Lopez <lopezcam@oregonstate.edu>
+  | Michael James  Dumelle <dumellem@oregonstate.edu>
+  | Tadesse Habtemariam  Zemicheal <zemichet@oregonstate.edu>
+output: pdf_document
+layout: one-col
+
+---
+
+# A New Topic: Intervention Analysis and Outlier Detection in Time Series
+
+
+### What we plan on doing
+
+### How we plan to present it 
+
+### References we plan to use
+
+### An idea for an example.
