@@ -4,7 +4,7 @@ author: |
   | Amirhosein "Emerson"  Azarbakht <azarbaka@oregonstate.edu>
   | Camden Lee  Lopez <lopezcam@oregonstate.edu>
   | Michael James  Dumelle <dumellem@oregonstate.edu>
-  | Tadesse Habtemariam  Zemicheal <zemichet@oregonstate.edu>
+  | Tadesse  Zemicheal <zemichet@oregonstate.edu>
 output: pdf_document
 layout: one-col
 
