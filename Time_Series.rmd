@@ -64,7 +64,7 @@ plotting shows _patterns_, and _features_ of the data + *outliers* and *erroneou
 ### patterns
 1. trend = a non-periodic systematic change in a TS: a long-term change in the 'mean'
     * can be modeled simply by a linear increase or decrease. (only if it's deterministic ~ it's non-stochastic)
-    * stochastic trend: seems to change direction at unpredictable times rather than displaying a consistent pattern (e.g. like the air passenger series)
+    * stochastic trend: seems to change direction at unpredictable times rather than displaying a consistent pattern (e.g. like the air passenger series); inexplicable changes in direction
 2. seasonal variation = a repeating pattern within a fixed period (e.g. each year)
 3. cycles = a non-fixed-period cycle (without a fixed period). example: El-Nino
 
@@ -166,7 +166,7 @@ or
 
 ### Transformations
 
-Transform the data (e.g. log or square-root) when:
+Transform the data (e.g. log or square-root) to stabilize the variance, when:
 
 1. if variance appears to increase with the mean.
     * if standard deviation is directly proportional to the mean (a trend), LOG transform!
@@ -297,6 +297,8 @@ plot(x, type = "l")
 acf(x)
 ```
 
+---
+
 #### diagnosis of a RW TS:
 
 its correlogram should look like this:
@@ -305,6 +307,8 @@ its correlogram should look like this:
 # this correlogram shows a RW TS (as a diagnostic tool)
 acf(diff(x))
 ```
+
+---
 
 ### Random Walk with drift TS [stochastic model for modeling residual TS]
 
@@ -471,7 +475,7 @@ x <- arima.sim(n = 10000, list(ar = -0.6, ma = 0.5))
 coef(arima(x, order = c(1, 0, 1)))
 ```
 
-Now, let's compare AR(p), MA(q), and ARMA(p,q)
+#### Now, let's compare AR(p), MA(q), and ARMA(p,q)
 
 ```{r}
 x.ma <- arima(x.ts, order = c(0, 0, 1))
@@ -487,7 +491,7 @@ x.arma
 acf(resid(x.arma))
 ```
 
-example: electricity production series
+#### example: electricity production series
 
 ```{r}
 CBE <- read.table("http://staff.elena.aut.ac.nz/Paul-Cowpertwait/ts/cbe.dat", header = T)
@@ -512,8 +516,15 @@ for (i in 0:2) for (j in 0:2) {
 best.order
 # correlogram
 acf(resid(best.arma))
+```
+
+---
 
 ## prediction
+
+something
+
+```{r}
 new.time <- seq(length(Elec.ts), length = 36)
 new.data <- data.frame(Time = new.time, Imth = rep(1:12,3))
 # predict using the fitted regression model of class lm 
@@ -525,12 +536,176 @@ elec.pred <- ts(exp(predict.lm + predict.arma$pred), start = 1991, freq = 12)
 ts.plot(cbind(Elec.ts, elec.pred), lty = 1:2)
 ```
 
-how to tell if a correlogram is of AR(1), MA(1) or WN
+---
+### how to tell if a correlogram is of AR(1), MA(1) or WN
 
 AR(1): smooth decay
 AR(1) with negative correlation: smooth decay, alternating positive and negative
 MA(1): lag 0 = 1, lag 1 = beta_1
 WN: lag 0 = 1, the rest are almost zero. 
 
-classmates: Dan & Paolo
+## Regression
 
+#### Time series regression vs. regular regression? 
+
+TS regression is different because its residual forms a TS, and is serially correlated. (if this correlation is positive => estimated s.e. of parameter estimates are less than their true values => erroneously low p-values)
+how to fix this? and get a proper estimated s.e.? use GLS (generalized least squares) to calculate estimated s.e.
+
+To do regression, we need to make the TS stationary, if it's non-stationary.
+e.g. if TS is $x_t = \alpha_0 + \alpha_1 t + z_t$, which is non-stationary, because it depends on t, then,
+
+$$\Delta x_t = x_t - x_{t-1} = \alpha_1 + z_t - z_{t-1}$$ 
+
+i.e. first order differencing, removes the trend, and makes it stationary. (assuming that $z_t$ is stationary error series)
+
+If the underlying trend is a polynomial of order m, then we need to do $m^{th}$-order differencing to remove its trend.
+
+```{r}
+set.seed(1)
+# Gaussian WN
+z <- w <- rnorm(100, sd = 20)
+# noise = AR(1) with alpha 0.8 and WN 
+for (t in 2:100) z[t] <- 0.8 * z[t - 1] + w[t]
+Time <- 1:100
+# TS with a straight line trend and AR(1) residual error noise
+x <- 50 + 3 * Time + z
+plot(x, xlab = "time", type = "l")
+
+# fit a linear regression model
+x.lm <- lm(x ~ Time)
+# look at the coefficients of the estimated linear regression model
+coef(x.lm)
+# calculate s.e. (standard errors): will be under-estimated because of serial correlation
+sqrt(diag(vcov(x.lm)))
+# summary() will give erroneous info, because of the under-estimated s.e. => incorrect p-values
+summary(x.lm)
+
+# check diagnostic plots
+acf(residuals(x.lm))
+pacf(residuals(x.lm))
+```
+
+another example:
+
+```{r}
+Global <- scan("http://staff.elena.aut.ac.nz/Paul-Cowpertwait/ts/global.dat")
+Global.ts <- ts(Global, st = c(1856, 1), end = c(2005, 12), fr = 12)
+temp <- window(Global.ts, start = 1970)
+temp.lm <- lm(temp ~ time(temp))
+coef(temp.lm)
+confint(temp.lm)
+acf(resid(lm(temp ~ time(temp))))
+```
+
+---
+
+### GLS (generalized least squares) 
+
+- GLS is a fitting procedure
+- to estimate the s.e. of the regression model parameters
+- better than the OLS we used before
+
+```{r}
+library(nlme)
+x.gls <- gls(x ~ Time, cor = corAR1(0.8))
+summary(x.gls)
+
+temp.gls <- gls(temp ~ time(temp), cor = corAR1(0.7))
+summary(temp.gls)
+# confidence interval 
+confint(temp.gls)
+
+# note that the confidence interval does not include zero => estimates are statistically significant => trend is significant => statistically significant increasing trend in global temperatures over the 1970-2005 period 
+
+```
+
+### Linear models with seasonality 
+
+treat the seasonal term as a factor! (e.g. 12 factors for monthly data TS) and do GLS or OLS like before.
+
+```{r}
+Seas <- cycle(temp)
+Time <- time(temp)
+# factors for seasonality. Use 0 in model to make sure the model won't have an intercept, otherwise one of the seasonal factors will be dropped and an intercept estimate will be in the output model
+temp.lm <- lm(temp ~ 0 + Time + factor(Seas))
+summary(temp.lm)
+coef(temp.lm)
+
+# predict two years ahead
+new.t <- seq(2006, len = 2 * 12, by = 1/12)
+new.dat <- data.frame(Time = new.t, Seas = rep(1:12, 2))
+predict(temp.lm, new.dat)[1:24]
+```
+
+### Harmonic seasonal models
+
+instead of using one parameter per season, smooth over the seasons => more parameter-efficient
+
+```{r}
+TIME <- seq(1, 12, len = 1000)
+plot(TIME, sin(2 * pi * TIME/12), type = "l")
+plot(TIME, sin(2 * pi * TIME/12) + 0.2 * sin(2 * pi * 2 * TIME/12) + 0.1 * sin(2 * pi * 4 * TIME/12) + 0.1 * cos(2 * pi * 4 * TIME/12), type = "l")
+
+set.seed(1)
+TIME <- 1:(10 * 12)
+w <- rnorm(10 * 12, sd = 0.5)
+Trend <- 0.1 + 0.005 * TIME + 0.001 * TIME^2
+Seasonal <- sin(2*pi*TIME/12) + 0.2*sin(2*pi*2*TIME/12) + 0.1*sin(2*pi*4*TIME/12) + 0.1*cos(2*pi*4*TIME/12)
+x <- Trend + Seasonal + w
+plot(x, type = "l")
+
+SIN <- COS <- matrix(nr = length(TIME), nc = 6)
+for (i in 1:6) {
+  COS[, i] <- cos(2 * pi * i * TIME/12)
+  SIN[, i] <- sin(2 * pi * i * TIME/12)
+}
+
+x.lm1 <- lm(x ~ TIME + I(TIME^2) + COS[, 1] + SIN[, 1] + COS[, 2] + SIN[, 2] + COS[, 3] + SIN[, 3] + COS[, 4] + SIN[, 4] + COS[, 5] + SIN[, 5] + COS[, 6] + SIN[, 6])
+coef(x.lm1)/sqrt(diag(vcov(x.lm1)))
+
+x.lm2 <- lm(x ~ I(TIME^2) + SIN[, 1] + SIN[, 2])
+coef(x.lm2)/sqrt(diag(vcov(x.lm2)))
+coef(x.lm2)
+
+AIC(x.lm1)
+AIC(x.lm2)
+AIC(lm(x ~ TIME +I(TIME^2) +SIN[,1] +SIN[,2] +SIN[,4] +COS[,4]))
+
+step(x.lm1)
+
+```
+
+#### Fit a harmonic model with a quadratic trend is fitted to the temperature series (1970–2005)
+
+```{r}
+SIN <- COS <- matrix(nr = length(temp), nc = 6)
+for (i in 1:6) {
+  COS[, i] <- cos(2 * pi * i * time(temp))
+  SIN[, i] <- sin(2 * pi * i * time(temp))
+}
+TIME <- (time(temp) - mean(time(temp)))/sd(time(temp))
+mean(time(temp))
+sd(time(temp))
+temp.lm1 <- lm(temp ~ TIME + I(TIME^2) + 
+                 COS[,1] + SIN[,1] + COS[,2] + SIN[,2] + 
+                 COS[,3] + SIN[,3] + COS[,4] + SIN[,4] +
+                 COS[,5] + SIN[,5] + COS[,6] + SIN[,6])
+coef(temp.lm1)/sqrt(diag(vcov(temp.lm1)))
+
+temp.lm2 <- lm(temp ~ TIME + SIN[, 1] + SIN[, 2])
+coef(temp.lm2)
+AIC(temp.lm)
+AIC(temp.lm1)
+AIC(temp.lm2)
+
+plot(time(temp), resid(temp.lm2), type = "l")
+abline(0, 0, col = "red")
+acf(resid(temp.lm2))
+pacf(resid(temp.lm2))
+
+res.ar <- ar(resid(temp.lm2), method = "mle")
+res.ar$ar
+sd(res.ar$res[-(1:2)])
+acf(res.ar$res[-(1:2)])
+
+```

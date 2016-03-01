@@ -1,0 +1,206 @@
+---
+title: 'ST565: Time Series HW6'
+author: "Amirhosein \"Emerson\" Azarbakht <azarbaka@oregonstate.edu>"
+output: pdf_document
+layout: one-col
+
+---
+
+## Question 1
+
+### The dataset bluebirdlite contains log sales and prices for the “lite” version of bluebird chips. Quantify the relationship between sales and price.
+
+```{r, include=FALSE}
+library(TSA)
+data(bluebirdlite)
+library(dplyr)
+library(ggplot2)
+library(forecast)
+# install.packages("tidyr")
+library(tidyr)
+?bluebirdlite
+```
+
+```{r}
+plot(bluebirdlite)
+big_font <- theme_grey(base_size =  24)
+
+
+attach(bluebirdlite)
+
+fit_lm <- lm(log.sales ~ price + I(price^2), data = bluebirdlite)
+summary(fit_lm)
+
+qplot(log.sales, price, data = bluebirdlite) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE, colour = "red") +
+  geom_smooth(se = FALSE)  +
+  big_font
+
+# assumptions
+# residuals versus covariates
+sales_lm <- fortify(fit_lm)
+qplot(price, .resid, data = sales_lm, geom= "line")
+qplot(price^2, .resid, data = sales_lm)
+
+# residuals versus fitted
+qplot(.fitted, .resid, data = sales_lm)
+
+# normality of residuals
+qqnorm(sales_lm$.resid)
+qqline(sales_lm$.resid)
+
+# correlation of residuals
+source(url("http://stat565.cwick.co.nz/code/get_acf.R")) # my code for examine_corr
+examine_corr(residuals(fit_lm)) 
+last_plot() + big_font
+# AR (4)? violates regression assumptions
+
+library(nlme)
+gls_fit <- gls(log.sales ~ price + I(price^2), data = bluebirdlite,
+    correlation = corARMA(p = 4), method = "ML")
+summary(gls_fit)
+
+# or
+# arima_fit <- with(bluebirdlite, 
+#   arima(log.sales, order = c(4, 0, 1), xreg = cbind(price, I(price^2))))
+# arima_fit
+
+# diagnostics
+fit_lm$residuals <- residuals(gls_fit, type = "normalized")
+bluebirdlite$fitted <- fitted(gls_fit)
+
+examine_corr(fit_lm$residuals) #looks good
+
+
+
+
+plot(bluebirdlite$fitted, gls_fit$residuals, data = bluebirdlite)
+
+qqnorm(gls_fit$residuals)
+qqline(gls_fit$residuals) #Looks okay
+
+confint(gls_fit)
+confint(fit_lm)
+intervals(gls_fit)
+
+# backtransform and use % decrease with price increase of 0.1
+est_gls <- 100*(1 - exp(0.1 * coef(gls_fit)["price"]))
+ci_gls <- 100*(1 - exp(0.1 * confint(gls_fit)["price", ]))
+```
+It is estimated that an increase in price of 10 cents is associated with decrease in median sales of `r round(est_gls, 2)` (95% CI `r round(ci_gls[1], 2)` to `r round(ci_gls[2], 2)`). 
+
+## Question 2
+
+### In class we looked at modelling the relationship between mortality, temperature and particulate matter. Repeat the analysis but seasonally difference all three series first. Compare the results.
+
+```{r}
+library(ggplot2)
+library(dplyr)
+# install.packages("tidyr")
+library(tidyr)
+load(url("http://www.stat.pitt.edu/stoffer/tsa3/tsa3.rda"))
+source(url("http://stat565.cwick.co.nz/code/fortify-ts.r"))
+source(url("http://stat565.cwick.co.nz/code/get_acf.R")) # my code for examine_corr
+big_font <- theme_grey(base_size =  24)
+
+# mort <- c(rep(NA,52), diff(cmort, lag = 52))
+# temp <- c(rep(NA,52), diff(tempr, lag = 52))
+# part <- c(rep(NA,52), diff(part, lag = 52))
+
+mort <- diff(cmort, lag = 52)
+temp <- diff(tempr, lag = 52)
+part <- diff(part, lag = 52)
+
+
+mort <- data.frame(mortality = mort, part = part, temp = temp)
+mort$time <- fortify(cmort)$time[53:508]
+# mort
+head(mort)
+qplot(time, value, data = gather(mort, variable, value, -time), geom = "line") +
+  facet_grid(variable ~ ., scale = "free")
+
+qplot(temp, mortality, data = mort)
+qplot(part, mortality, data = mort)
+qplot(temp, part, data = mort)
+
+qplot(temp, mortality, data = mort) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE, colour = "red") +
+  geom_smooth(se = FALSE)  +
+  big_font
+
+qplot(part, mortality, data = mort) + geom_smooth(se = FALSE) + 
+  big_font
+
+mort <- mutate(mort, temp_sc = temp - mean(temp),
+               temp_2 = temp_sc^2,
+               time0 = time - min(time))
+
+fit_lm <- lm(mortality ~ time0 + temp_sc + temp_2 + part, data = mort, na.action = na.omit)
+summary(fit_lm)
+
+# assumptions
+# residuals versus covariates
+mort_lm <- fortify(fit_lm)
+qplot(time0, .resid, data = mort_lm, geom= "line")
+qplot(temp_sc, .resid, data = mort_lm)
+qplot(part, .resid, data = mort_lm)
+
+# residuals versus fitted
+qplot(.fitted, .resid, data = mort_lm)
+
+# normality of residuals
+qqnorm(mort_lm$.resid)
+qqline(mort_lm$.resid)
+
+# correlation of residuals
+examine_corr(residuals(fit_lm)) 
+last_plot() + big_font
+# AR (2)? violates regression assumptions
+
+# two ways to fit
+library(nlme)
+gls_fit <- gls(mortality ~ time0 + temp_sc + temp_2 + part, data = mort,
+    correlation = corARMA(p = 15), method = "ML")
+summary(gls_fit)
+
+# or
+# auto.arima(mort$mortality)
+
+arima_fit <- with(mort, 
+  arima(mortality, order = c(15, 0, 0), xreg = cbind(time0, temp_sc, temp_2, part)))
+arima_fit
+
+# diagnostics
+mort$residuals <- residuals(gls_fit, type = "normalized")
+mort$fitted <- fitted(gls_fit)
+
+examine_corr(mort$residuals)
+
+qplot(fitted, residuals, data = mort) + geom_hline(yintercept = 0)
+qplot(time, residuals, data = mort) + geom_hline(yintercept = 0)
+qplot(temp, residuals, data = mort) + geom_hline(yintercept = 0)
+qplot(part, residuals, data = mort) + geom_hline(yintercept = 0)
+
+qqnorm(mort$residuals)
+qqline(mort$residuals)
+
+confint(arima_fit)
+confint(fit_lm)
+intervals(gls_fit)
+
+# if you refit the model with white noise errors using gls, you can actually 
+# test to see if the correlation structure improved the fit
+gls_wn <- gls(mortality ~ time0 + temp_sc + temp_2 + part, data = mort, method = "ML")
+anova(gls_wn, gls_fit)
+
+# plot prediction on temp versus mortality plot
+mort$pred <- predict(gls_fit, newdata = 
+  data.frame(time0 = 0, temp_sc = mort$temp_sc,
+             temp_2 = mort$temp_2, part = mean(mort$part)))
+
+qplot(temp, mortality, data = mort) +
+  geom_line(aes(y = pred))
+
+```
+
+My analysis shows that removing the seasonality by differencing with lag 52, results in a better-fitting model, in comparison with when seasonality is present in data and is not dealt with properly. This is because when there exists a clear seasonal trend in the data, the data is non-stationary and we shoud remove non-stationarity for our analysis and model to be meaningful. In our case, the annual changes in temperature and other seasonal trends are a result of one confounding factor "the time of the year". Differencing gets rid of this, and gives us a clean stationary time series. Our model shows different significant explanatory variables, and the AIC for our model is better than Charlotte's provided code without removing seasonality. 
