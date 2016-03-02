@@ -107,20 +107,14 @@ acf(x)
 spectrum(x, span = 51, log = c("no"))
 ```
 
-
-
 ### 2. 
 Show that if $X_t$ and $Y_t$ are independent, stationary processes with power spectral density functions $f_x(\omega)$ and $f_y(\omega)$, then $V_t=X_t+Y_t$ is also stationary with power spectral density $f_v(\omega)=f_x(\omega)+f_y(\omega)$
 
 -------
 
+## Question 2
 
-## Question2
-
-The data.frame flow_df contains the average monthly river flow $m^3$/sec
-
-in the Mckenzie river at Mckenzie Bridge, Oregon. (I got this from http://robjhyndman.com/tsdldata/askew/askew7.dat who quotes the source: Hipel and Mcleod (1994))
-
+The data.frame flow_df contains the average monthly river flow $m^3$/sec in the Mckenzie river at Mckenzie Bridge, Oregon. (I got this from http://robjhyndman.com/tsdldata/askew/askew7.dat who quotes the source: Hipel and Mcleod (1994))
 The column time contains a simple time index, the number of months since the start of the record. The column date contains a decimal representation of the date, i.e. 1911.750 is October 1911.
 
 ### 1. Estimate the spectrum of the logarithm of flow. Make sure you show evidence you experimented with the amount of smoothing, but you need only show your final plot.
@@ -196,3 +190,12 @@ The spectrim of the residual differs from the spectrum of the original data (log
 
 ### 4. Examine the residuals from the harmonic regression using both the ACF/PACF and periodogram. Is there any evidence of remaining autocorrelation?
 
+```{r}
+# examine the residuals
+plot(fit$residuals, type = "l")
+acf(fit$residuals)
+pacf(fit$residuals)
+spectrum(fit$residuals)
+
+
+```
