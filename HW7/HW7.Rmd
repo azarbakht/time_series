@@ -112,9 +112,10 @@ spectrum(x, span = 51, log = c("no"))
 ### 2. 
 Show that if $X_t$ and $Y_t$ are independent, stationary processes with power spectral density functions $f_x(\omega)$ and $f_y(\omega)$, then $V_t=X_t+Y_t$ is also stationary with power spectral density $f_v(\omega)=f_x(\omega)+f_y(\omega)$
 
----
+-------
 
-## Q2
+
+## Question2
 
 The data.frame flow_df contains the average monthly river flow $m^3$/sec
 
@@ -122,8 +123,7 @@ in the Mckenzie river at Mckenzie Bridge, Oregon. (I got this from http://robjhy
 
 The column time contains a simple time index, the number of months since the start of the record. The column date contains a decimal representation of the date, i.e. 1911.750 is October 1911.
 
-1. Estimate the spectrum of the logarithm of flow. Make sure you show evidence you experimented with the amount of smoothing, but you need only show your final plot.
-
+### 1. Estimate the spectrum of the logarithm of flow. Make sure you show evidence you experimented with the amount of smoothing, but you need only show your final plot.
 
 
 ```{r}
@@ -133,7 +133,7 @@ qplot(time, log(flow), data = flow_df, geom = "line")
 
 attach(flow_df)
 flow_log <- log(flow)
-flow_log
+# flow_log
 spectrum(flow_log)
 # freq = 1, corresponds to 1 cycle per year
 
@@ -150,7 +150,9 @@ spectrum(flow_log, spans = 15, taper = 0)
 
 ```
 
-2. Fit a smooth trend to the logarithm of flow, and estimate the spectrum of the residuals. How does this spectrum differ from the one in part 1.?
+---
+
+### 2. Fit a smooth trend to the logarithm of flow, and estimate the spectrum of the residuals. How does this spectrum differ from the one in part 1.?
 
 ```{r}
 attach(flow_df)
@@ -170,8 +172,12 @@ str(flow_log_ts)
 
 ```
 
+The spectrim of the residual differs from the spectrum of the original data (logarithm of flow) in the first left-most frequencies. This is not surprising as the smoothed trend model we fit earlier, is pretty much a horizontal line/curve, and removing the trend would result in a similar residual series with similar frequencies, except for the level shift. This level shift difference between the two spectrums is visible in the two spectrum plots' Y-axis tick marks. 
 
-3. Fit a harmonic regression to the residuals from 2 using the estimated spectrum to choose the number and frequencies of the periodic components.
+---
+
+### 3. Fit a harmonic regression to the residuals from 2 using the estimated spectrum to choose the number and frequencies of the periodic components.
+
 
 ```{r}
 # par(mfrow = c(1,1))
@@ -186,5 +192,7 @@ str(flow_log_ts)
 
 ```
 
-4. Examine the residuals from the harmonic regression using both the ACF/PACF and periodogram. Is there any evidence of remaining autocorrelation?
+---
+
+### 4. Examine the residuals from the harmonic regression using both the ACF/PACF and periodogram. Is there any evidence of remaining autocorrelation?
 
