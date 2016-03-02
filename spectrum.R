@@ -1,0 +1,5 @@
+layout(1:2)
+set.seed(1)
+x <- rnorm(2048)
+spectrum(x, log = c("no"))
+spectrum(x, span = 65, log = c("no"))
