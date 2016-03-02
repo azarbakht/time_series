@@ -8,30 +8,34 @@ layout: one-col
 
 ## Question 1
 
+### 1. Derive the spectrum for an MA(1) process.
+
 $$ \gamma(k) = \begin{cases}
 \beta_1^2 \sigma^2 + \sigma^2 \text{\qquad for k = 0} \\
 \beta_1 \sigma^2 \text{\qquad  for k = 1}\\
-0 \text{\qquad for k >= 1}
+0 \text{\qquad for k >= 2}
 \end{cases}
 $$
 
 $$ 
-f(\omega) = 1/\pi \big[\gamma(0) + 2 \Sigma_{k=1}^\infty \gamma(k) \cos(\gamma k) \big]
+f(\omega) = 1/\pi \big[\gamma(0) + 2 \Sigma_{k=1}^\infty \gamma(k) \cos(\omega k) \big]
 $$
 
 $$ 
-f(\omega) = 1/\pi \big[\beta_1^2 \sigma^2 + \sigma^2 + 2 [\beta_1 \sigma^2] \cos(\gamma) \big]
+f(\omega) = 1/\pi \big[\beta_1^2 \sigma^2 + \sigma^2 + 2 [\beta_1 \sigma^2] \cos(\omega) \big]
 $$
 
 $$ 
-f(\omega) = 1/\pi \big[\beta_1^2 \sigma^2 + \sigma^2 + 2 \beta_1 \sigma^2 \cos(\gamma) \big]
+f(\omega) = 1/\pi \big[\beta_1^2 \sigma^2 + \sigma^2 + 2 \beta_1 \sigma^2 \cos(\omega) \big]
 $$
 
 $$ 
-f(\omega) = \sigma^2/\pi \big[\beta_1^2 + 1 + 2 \beta_1 \cos(\gamma) \big]
+f(\omega) = \sigma^2/\pi \big[\beta_1^2 + 1 + 2 \beta_1 \cos(\omega) \big]
 $$
 
-```{r}
+### Produce a plot of the spectrum showing the shape for a few values of $\beta$.
+
+```{r, include=FALSE}
 
 # WN
 # set.seed(1)
@@ -41,16 +45,22 @@ $$
 # plot(as.ts(x))
 # acf(x)
 # spectrum(x, span = 51, log = c("no"))
-# 
+
+
+# # 
 # # AR(1)
 # set.seed(1)
-# x <- w <- rnorm(1024)
+# x <- y <- w <- rnorm(1024)
 # for (t in 2:1024) x[t]<- 0.9 * x[t-1] + w[t]
+# # for (t in 2:1024) y[t]<- x[t] + 500
 # layout(1:3)
 # plot(as.ts(x))
 # acf(x)
 # spectrum(x, span = 51, log = c("no"))
+# # spectrum(y, span = 51, log = c("no"))
+```
 
+```{r}
 # MA(1)
 set.seed(1)
 x <- w <- rnorm(1024)
@@ -95,9 +105,86 @@ layout(1:3)
 plot(as.ts(x))
 acf(x)
 spectrum(x, span = 51, log = c("no"))
+```
 
 
 
+### 2. 
+Show that if $X_t$ and $Y_t$ are independent, stationary processes with power spectral density functions $f_x(\omega)$ and $f_y(\omega)$, then $V_t=X_t+Y_t$ is also stationary with power spectral density $f_v(\omega)=f_x(\omega)+f_y(\omega)$
+
+---
+
+## Q2
+
+The data.frame flow_df contains the average monthly river flow $m^3$/sec
+
+in the Mckenzie river at Mckenzie Bridge, Oregon. (I got this from http://robjhyndman.com/tsdldata/askew/askew7.dat who quotes the source: Hipel and Mcleod (1994))
+
+The column time contains a simple time index, the number of months since the start of the record. The column date contains a decimal representation of the date, i.e. 1911.750 is October 1911.
+
+1. Estimate the spectrum of the logarithm of flow. Make sure you show evidence you experimented with the amount of smoothing, but you need only show your final plot.
+
+
+
+```{r}
+library(ggplot2)
+load(url("http://stat565.cwick.co.nz/data/flow_df.rda"))
+qplot(time, log(flow), data = flow_df, geom = "line")
+
+attach(flow_df)
+flow_log <- log(flow)
+flow_log
+spectrum(flow_log)
+# freq = 1, corresponds to 1 cycle per year
+
+## try some spans
+# spectrum(flow_log, taper = 0)
+# spectrum(flow_log, spans = 5, taper = 0)
+# spectrum(flow_log, spans = 10, taper = 0)
+spectrum(flow_log, spans = 15, taper = 0)
+# looks good
+# spectrum(flow_log, spans = 20, taper = 0)
+# spectrum(flow_log, spans = 23, taper = 0)
+# spectrum(flow_log, spans = 50, taper = 0)
 
 
 ```
+
+2. Fit a smooth trend to the logarithm of flow, and estimate the spectrum of the residuals. How does this spectrum differ from the one in part 1.?
+
+```{r}
+attach(flow_df)
+fit <- loess(flow_log ~ time, method = "loess")
+
+par(mfrow = c(2,1))
+flow_log_ts <- ts(flow_log, start = 1, frequency = 1)
+plot(flow_log_ts)
+lines(fit$fitted)
+plot(fit$residuals, type = "l")
+
+par(mfrow = c(2,1))
+spectrum(flow_log, spans = 15, taper = 0)
+spectrum(fit$residuals, spans = 15, taper = 0)
+
+str(flow_log_ts)
+
+```
+
+
+3. Fit a harmonic regression to the residuals from 2 using the estimated spectrum to choose the number and frequencies of the periodic components.
+
+```{r}
+# par(mfrow = c(1,1))
+# 
+# periodic <- function(x, frequency = 1, order = 1){
+#   do.call(cbind, lapply(1:order, function(ord){
+#     cbind(cos(2*pi*ord*frequency*x), sin(2*pi*ord*frequency*x))    
+#   }))
+# }
+# 
+# fit_harm <- lm(fit$residuals ~ time + periodic(time, frequency = 1, order = 3) + periodic(time, freq = 1/4, order = 1), data = flow_log)
+
+```
+
+4. Examine the residuals from the harmonic regression using both the ACF/PACF and periodogram. Is there any evidence of remaining autocorrelation?
+
