@@ -162,11 +162,15 @@ par(mfrow = c(2,1))
 spectrum(flow_log, spans = 15, taper = 0)
 spectrum(fit$residuals, spans = 15, taper = 0)
 
+abline(v = c(1/12, 2/12), col = "#9E0142")
+# 
+# abline(v = c(1/12, 2/12, 3/12, 4/12), col = "#9E0142")
+
 str(flow_log_ts)
 
 ```
 
-The spectrim of the residual differs from the spectrum of the original data (logarithm of flow) in the first left-most frequencies. This is not surprising as the smoothed trend model we fit earlier, is pretty much a horizontal line/curve, and removing the trend would result in a similar residual series with similar frequencies, except for the level shift. This level shift difference between the two spectrums is visible in the two spectrum plots' Y-axis tick marks. 
+The spectrum of the residual differs from the spectrum of the original data (logarithm of flow) in the first left-most frequencies. This is not surprising as the smoothed trend model we fit earlier, is pretty much a horizontal line/curve, and removing the trend would result in a similar residual series with similar frequencies, except for the level shift. This level shift difference between the two spectrums is visible in the two spectrum plots' Y-axis tick marks. 
 
 ---
 
@@ -174,15 +178,26 @@ The spectrim of the residual differs from the spectrum of the original data (log
 
 
 ```{r}
-# par(mfrow = c(1,1))
-# 
-# periodic <- function(x, frequency = 1, order = 1){
-#   do.call(cbind, lapply(1:order, function(ord){
-#     cbind(cos(2*pi*ord*frequency*x), sin(2*pi*ord*frequency*x))    
-#   }))
-# }
-# 
-# fit_harm <- lm(fit$residuals ~ time + periodic(time, frequency = 1, order = 3) + periodic(time, freq = 1/4, order = 1), data = flow_log)
+par(mfrow = c(1,1))
+
+
+
+periodic <- function(x, frequency = 1, order = 1){
+  do.call(cbind, lapply(1:order, function(ord){
+    cbind(cos(2*pi*ord*frequency*x), sin(2*pi*ord*frequency*x))    
+  }))
+}
+
+fit_harm <- lm(flow_log ~ time + periodic(time, freq = 1/12, order = 2), data = flow_df)
+
+qplot(time, residuals(fit_harm), data = flow_df, geom = "line") + geom_smooth()
+source(url("http://stat565.cwick.co.nz/code/get_acf.R"))
+examine_corr(residuals(fit_harm))
+
+library(nlme)
+fit_gls <- gls(flow_log ~ time + periodic(time, freq = 1/12, order = 2), data = flow_df,
+               correlation = corARMA(p = 1, q = 0))
+examine_corr(residuals(fit_gls, type = "normalized"))
 
 ```
 
@@ -192,10 +207,9 @@ The spectrim of the residual differs from the spectrum of the original data (log
 
 ```{r}
 # examine the residuals
-plot(fit$residuals, type = "l")
-acf(fit$residuals)
-pacf(fit$residuals)
-spectrum(fit$residuals)
-
+examine_corr(residuals(fit_gls, type = "normalized"))
+spectrum(residuals(fit_gls, type = "normalized"), span = 15) # looks good
 
 ```
+
+Residuals from the linear regression model shows AR(1) temporal correlation remaining. So, I fit a gls model with AR(1) component. The residuals from this gls harmonic regression model with an AR(1) component looks good, because it looks like white noise, which shows there's no evidence of remaining autocorrelation. 
