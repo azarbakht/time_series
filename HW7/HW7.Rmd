@@ -107,8 +107,25 @@ acf(x)
 spectrum(x, span = 51, log = c("no"))
 ```
 
-### 2. 
-Show that if $X_t$ and $Y_t$ are independent, stationary processes with power spectral density functions $f_x(\omega)$ and $f_y(\omega)$, then $V_t=X_t+Y_t$ is also stationary with power spectral density $f_v(\omega)=f_x(\omega)+f_y(\omega)$
+---
+
+### 2. Show that if $X_t$ and $Y_t$ are independent, stationary processes with power spectral density functions $f_x(\omega)$ and $f_y(\omega)$, then $V_t=X_t+Y_t$ is also stationary with power spectral density $f_v(\omega)=f_x(\omega)+f_y(\omega)$
+
+$$ f(\omega) = 1/\pi \big[\gamma(0) + 2 \Sigma_{k=1}^\infty \gamma(k) \cos(\omega k) \big] $$
+
+$X_t$ and $Y_t$ are independent, so, $$ \sigma_v^2 = \sigma_x^2 + \sigma_y^2 $$
+
+$$ \gamma_v(h) = \Sigma_{j = 1}^{h} \sigma^2_v \cos(\omega_j h)  $$
+$$ = \Sigma_{j = 1}^{h} (\sigma_x^2 + \sigma_y^2) \cos(\omega_j h) $$
+$$ = \Sigma_{j = 1}^{h} \sigma_x^2 \cos(\omega_j h) +  \Sigma_{j = 1}^{h} \sigma_y^2 \cos(\omega_j h) $$ 
+$$ = \gamma_x(h) + \gamma_y(h)$$
+
+$$ f_v(\omega) = 1/\pi \big[\gamma(0) + 2 \Sigma_{k=1}^\infty \gamma_v(k) \cos(\omega k) \big] $$
+$$ = 1/\pi \big[(\gamma_x(0) + \gamma_y(0)) + 2 \Sigma_{k=1}^\infty (\gamma_x(k) + \gamma_y(k)) \cos(\omega k) \big] $$
+$$ = 1/\pi \big[(\gamma_x(0) + 2 \Sigma_{k=1}^\infty \gamma_x(k) \cos(\omega k) \big] + 1/\pi \big[(\gamma_y(0) + 2 \Sigma_{k=1}^\infty \gamma_y(k) \cos(\omega k) \big] $$
+$$ f_x(\omega) + f_y(\omega) $$
+
+Hence,  $f_v(\omega)=f_x(\omega)+f_y(\omega)$.
 
 -------
 
